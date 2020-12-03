@@ -3,7 +3,7 @@ class storage{
         this.index = -1;
         this.score = 0;
         this.timer = 0;
-        this.level = 1;
+        this.level = 5;
         this.initKeyMap();
 
         this.bag = [0,0,0,0,0,0,0];
@@ -12,6 +12,10 @@ class storage{
 
     getLevel(){
         return Math.min(this.level,20);
+    }
+
+    getGravity(){
+        return GRAVITY[this.getLevel()];
     }
 
     getIndex(){
@@ -60,5 +64,12 @@ class storage{
             if(this.bag[i]==0) return;
         for(var i = 0; i<this.bag.length;i++)
             this.bag[i]=0;
+    }
+
+    checkLR(){
+        if(this.keyMap[KEY.LEFT]&&this.keyMap[KEY.RIGHT])
+            return 0;
+        else if(this.keyMap[KEY.LEFT]) return 1;
+        else if(this.keyMap[KEY.RIGHT]) return 2;
     }
 }

@@ -9,9 +9,9 @@ const blockSizeOutline = 21;
 const xOffset = 100;
 const yOffset = 20;
 
-const DAS = 24;
-const ARR = 4;
-const entryDelay = 12;
+const DAS = 12;
+const ARR = 2;
+const entryDelay = 6;
 
 const GRAVITY = [
     1.0,
@@ -44,7 +44,13 @@ const KEY = {
     DOWN: 40,
     G: 78,
     P: 80
-}
+};
+
+const KEYSTATES = {
+    LR: 0,
+    L : 1,
+    R : 2
+};
 
 const colorMap =  [
                     "rgb(000,240,000)",     //S
@@ -61,55 +67,14 @@ const guideline = "rgb(040,040,040)";
 const ghost =     "rgb(080,080,080)";
 
 const pieceMap = [
-
-//S
-[
-    [0,1,1],
-    [1,1,0],
-    [0,0,0],
-],
-
-//Z
-[
-    [2,2,0],
-    [0,2,2],
-    [0,0,0],
-],
-
-//T
-[
-    [0,2,0],
-    [2,2,2],
-    [0,0,0],
-],
-
-//L
-[
-    [0,0,3],
-    [3,3,3],
-    [0,0,0],
-],
-//J
-[
-    [4,0,0],
-    [4,4,4],
-    [0,0,0],
-],
-
-//I
-[
-    [0,0,0,0],
-    [5,5,5,5],
-    [0,0,0,0],
-    [0,0,0,0]
-],
-//O
-[
-    [6,6],
-    [6,6]
-],
-
-]
+    [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
+    [ 0xC600, 0x2640, 0x0C60, 0x4C80 ], // 'Z' 
+    [ 0x4E00, 0x4640, 0x0E40, 0x4C40 ], // 'T' 
+    [ 0x2E00, 0x4460, 0xE800, 0xC440 ], // 'L' 
+    [ 0x8E00, 0x6440, 0xE200, 0x44C0 ], // 'J' 
+    [ 0x0F00, 0x2222, 0x00F0, 0x4444 ], // 'I' 
+    [ 0xCC00, 0xCC00, 0xCC00, 0xCC00 ]  // 'O'
+];
 
 const rotateOffsets = [
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],
