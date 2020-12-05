@@ -100,7 +100,7 @@ function hardDrop()
 {
     if(UserStorage.keyMap[KEY.SPACE])
     {
-        let p = moves[KEY.DOWN](piece);
+        let p = {...piece};
         while(board.canMoveDown(p))
         {
             p.y++;

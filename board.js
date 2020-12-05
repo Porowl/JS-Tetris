@@ -1,25 +1,24 @@
 class Board{
     constructor(ctx){
         this.ctx = ctx;
-        this.draw();
         this.board = this.initBoard();
+        this.draw();
     }
 
     draw(){
         this.ctx.fillStyle = guideline;
         this.ctx.fillRect(xOffset,yOffset,w*blockSizeOutline-1,visibleH*blockSizeOutline);
 
-        this.ctx.fillStyle = black;
         for(var i = 0;i<visibleH;i++){
             for(var j = 0; j<w; j++){
-                var x = xOffset + j *blockSizeOutline;
-                var y = yOffset + i*blockSizeOutline;
+                var x = xOffset + j * blockSizeOutline;
+                var y = yOffset + i * blockSizeOutline;
+                let color = this.board[i+20][j] - 1;
+                this.ctx.fillStyle = color<0?black:colorMap[color];
                 this.ctx.fillRect(x,y,blockSize,blockSize);
             }
         }
     }
-
-
 
     initBoard(){
         var array = Array(h);
@@ -44,7 +43,7 @@ class Board{
             }
         }
         var cleared = false;
-        for(var i = p.y;i<Math.min(h,p.y+4);i++)
+        for(var i = p.y+20;i<Math.min(h,p.y+24);i++)
         {
             cleared = cleared || this.checkLine(i);
         }
@@ -56,6 +55,7 @@ class Board{
 
     checkLine(y)
     {
+        console.log("checking line "+y);
         let filled = true;
         for(var x = 0; x<w;x++)
         {
