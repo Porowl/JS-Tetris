@@ -71,5 +71,14 @@ class storage{
             return 0;
         else if(this.keyMap[KEY.LEFT]) return 1;
         else if(this.keyMap[KEY.RIGHT]) return 2;
+        return -1;
+    }
+
+    checkRot(){
+        if(this.keyMap[KEY.UP]&&this.keyMap[KEY.C])
+            return KEYSTATES.UC;
+        else if(this.keyMap[KEY.UP]) return KEYSTATES.U;
+        else if(this.keyMap[KEY.C]) return KEYSTATES.C;
+        return -1;
     }
 }
