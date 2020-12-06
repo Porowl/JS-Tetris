@@ -6,8 +6,17 @@ const visibleH = 20;
 const w = 10;
 const blockSize = 20;
 const blockSizeOutline = blockSize+1;
+const nextBlockSize = 8;
+const nextBlockSizeOutline = nextBlockSize+1;
+
 const xOffset = 100;
 const yOffset = 20;
+
+const nextXOffset = xOffset 
+                    + blockSizeOutline*w 
+                    + 50;
+const nextYOffset = yOffset+nextBlockSizeOutline;
+const distBtwNexts = 3*nextBlockSizeOutline;
 
 const DAS = 12;
 const ARR = 2;
@@ -69,6 +78,8 @@ const colorMap =  [
 const black =     "rgb(000,000,000)";
 const guideline = "rgb(040,040,040)";
 const ghost =     "rgb(080,080,080)";
+const lineClearWhite = "rgba(255,255,255,25)";
+const lineClearBlack = "rgba(000,000,000,25)";
 
 const pieceMap = [
     [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
@@ -85,7 +96,7 @@ const moves = {
     [KEY.RIGHT]: p=>({...p,x:p.x+1}),
     [KEY.DOWN]: p=>({...p,y:p.y+1}),
 }
-const rotateOffsets = [
+const Offsets = [
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0 -> 1
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 0
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 2
@@ -96,7 +107,7 @@ const rotateOffsets = [
     [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 0 -> 3 
 ];
 
-const rotateIOffsets = [
+const IOffsets = [
     [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 0 -> 1
     [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 1 -> 0
     [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 1 -> 2

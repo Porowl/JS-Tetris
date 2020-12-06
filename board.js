@@ -42,42 +42,39 @@ class Board{
                 }
             }
         }
-        var cleared = false;
-        for(var i = p.y+20;i<Math.min(h,p.y+24);i++)
+        var counter = 0;
+        for(var index = p.y+20; index<Math.min(p.y+24,h); index++)
         {
-            cleared = cleared || this.checkLine(i);
+            counter += this.checkLine(index);
         }
-        if(cleared)
-        {
-            this.draw()
-        }
+        return counter;
     }
 
     checkLine(y)
     {
-        console.log("checking line "+y);
         let filled = true;
         for(var x = 0; x<w;x++)
         {
             if(this.board[y][x]==0)
             {
                 filled = false;
-                break;
+                continue;
             }
         }
         if(filled) this.clearLine(y);
-        return filled;
+        return filled?1:0;
     }
 
     clearLine(i)
     {
-        for(var y = i;i>0;i--)
+        for(var y = i;y>0;y--)
         {
             for(var x = 0; x<w;x++)
             {
                 this.board[y][x] = this.board[y-1][x];
             }
         }
+        this.clearAnimation(i);
     }
 
     drawPiece(piece){
@@ -119,6 +116,54 @@ class Board{
         }
     }
 
+    drawGhost(piece){
+        let p = {...piece};
+        while(this.canMoveDown(p))
+        {
+            p.y++;
+        }
+        for(var i = 0;i<4;i++)
+        {
+            for(var j = 0;j<4;j++)
+            {
+                if(p.shape & (0x8000 >> (i*4+j)))
+                {
+                    if(p.y+i>=0){
+                        this.ctx.fillStyle = ghost;
+                        var x = xOffset+(p.x+j)*blockSizeOutline;
+                        var y = yOffset+(p.y+i)*blockSizeOutline;
+                        var w = blockSize; 
+                        var h = blockSize;
+                        this.ctx.fillRect(x,y,w,h);}
+                }
+            }
+        }
+    }
+
+    hideGhost(piece){
+        let p = {...piece};
+        while(this.canMoveDown(p))
+        {
+            p.y++;
+        }
+        for(var i = 0;i<4;i++)
+        {
+            for(var j = 0;j<4;j++)
+            {
+                if(p.shape & (0x8000 >> (i*4+j)))
+                {
+                    if(p.y+i>=0){
+                        this.ctx.fillStyle = black;
+                        var x = xOffset+(p.x+j)*blockSizeOutline;
+                        var y = yOffset+(p.y+i)*blockSizeOutline;
+                        var w = blockSize; 
+                        var h = blockSize;
+                        this.ctx.fillRect(x,y,w,h);}
+                }
+            }
+        }
+    }
+
     valid(p){
         for(var i = 0;i<4;i++){
             for(var j = 0; j<4;j++){
@@ -142,5 +187,41 @@ class Board{
 
     canMoveDown(p){
         return this.valid({...p,y:p.y+1})
+    }
+
+    drawNext(typeId,index)
+    {
+        for(var i = 0;i<4;i++)
+        {
+            for(var j = 0;j<4;j++)
+            {
+                if(pieceMap[typeId][0] & (0x8000 >> (i*4+j)))
+                {
+                    this.ctx.fillStyle = colorMap[typeId];
+                    var x = nextXOffset+j*nextBlockSizeOutline;
+                    var y = nextYOffset+i*nextBlockSizeOutline+distBtwNexts*index;
+                    var w = nextBlockSize; 
+                    var h = nextBlockSize;
+                    this.ctx.fillRect(x,y,w,h);
+                }
+            }
+        }
+    }
+
+    clearAnimation(l)
+    {
+
+        var x = xOffset
+        var y = yOffset + (l-20) * blockSizeOutline;
+        var w = blockSizeOutline*w-1
+        var h = blockSize
+
+        ctx.fillStyle = lineClearWhite;
+        for(var i = 1; i<=10; i++)
+            setTimeout(ctx.fillRect(x,y,w,h),17*i);
+
+        ctx.fillStyle = lineClearBlack;
+        for(var i = 11; i<=20; i++)
+            setTimeout(ctx.fillRect(x,y,w,h),17*i);
     }
 }

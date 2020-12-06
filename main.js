@@ -1,17 +1,20 @@
 var board;
 var UserStorage;
 var piece;
-var playerControl;
 
-var initDealy = 0;
-
+var initDelay = 0;
 var LRframeCount = 0;
 var RotateFrameCount = 0;
 var last, now;
-var initDelay = 0;
+
 var dropRate = 0;
 var lockDelay = 0;
+var lineClearDelay = -1;
+
 var gravity;
+var ghostSwitch = true;
+var requestId;
+
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
  * keydown 이벤트와 keyup 이벤트 생성 후
@@ -23,6 +26,8 @@ function init()
     board = new Board(ctx);   
     UserStorage = new storage(); 
     piece = new Piece(UserStorage.getPiece());
+    updatePiece(piece);
+    updateNexts();
 
     document.addEventListener('keydown',event=>
     {
@@ -39,7 +44,7 @@ function init()
 
     gravity = UserStorage.getGravity();
 
-    animate();
+    requestId = requestAnimationFrame(animate);
 }
 
 /**
@@ -56,7 +61,7 @@ function animate()
     update(Math.min(1,dt));
     //document.getElementById("UC").innerText = "RF : " + RotateFrameCount;
     //document.getElementById("LR").innerText = "LRF: " + LRframeCount;
-    requestId = window.requestAnimationFrame(animate);
+    if(requestId) requestID = requestAnimationFrame(animate);
 }
 
 /**
@@ -67,11 +72,30 @@ function animate()
 function update(dt){
     initDelay -= dt;
 
+    checkTopOut();
+
     inputCycle();
 
     if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
     {
         lock();
+    }
+
+    if(lineClearDelay>0)
+    {
+        lineClearDelay-= dt;
+        if(lineClearDelay<0) lineClearDelay = 0;
+        return;
+    }
+    
+    if(lineClearDelay==0)
+    {
+        piece = new Piece(UserStorage.getPiece());
+        updatePiece(piece);
+        updateNexts();
+        board.draw();
+        initDelay = 17*6/1000;
+        lineClearDelay = -1;
     }
 
     if(initDelay>0) return;
@@ -91,9 +115,9 @@ function update(dt){
 
 function inputCycle()
 {
-    hardDrop();
     moveLR();
     rotate();
+    hardDrop();
 }
 
 function hardDrop()
@@ -108,6 +132,29 @@ function hardDrop()
         updatePiece(p);
         piece.hardDropped = true;
         UserStorage.keyMap[KEY.SPACE] = false;
+    }
+}
+
+function moveDownCycle()
+{
+    if(UserStorage.keyMap[KEY.DOWN]&&gravity>2/60)
+    {
+        moveDown()
+        return;
+    }
+    while(dropRate>gravity){
+        dropRate -= gravity;
+        moveDown();
+    }
+
+}
+
+function moveDown()
+{
+    if(board.canMoveDown(piece))
+    {
+        let p = moves[KEY.DOWN](piece);
+        updatePiece(p);
     }
 }
 
@@ -149,29 +196,6 @@ function moveLR()
         {
             updatePiece(p);
         }    
-    }
-}
-
-function moveDownCycle()
-{
-    if(UserStorage.keyMap[KEY.DOWN]&&gravity>2/60)
-    {
-        moveDown()
-        return;
-    }
-    while(dropRate>gravity){
-        dropRate -= gravity;
-        moveDown();
-    }
-
-}
-
-function moveDown()
-{
-    if(board.canMoveDown(piece))
-    {
-        let p = moves[KEY.DOWN](piece);
-        updatePiece(p);
     }
 }
 
@@ -224,12 +248,11 @@ function rotateAc(a)
     do
     {
         p = {...piece, 
-                x: piece.x + rotateOffsets[piece.rotation*2+a][test][0],
-                y: piece.y - rotateOffsets[piece.rotation*2+a][test][1], 
+                x: piece.x + (piece.typeId==5?IOffsets:Offsets)[piece.rotation*2+a][test][0],
+                y: piece.y - (piece.typeId==5?IOffsets:Offsets)[piece.rotation*2+a][test][1], 
                 rotation: next,
                 shape: pieceMap[piece.typeId][next]
             };
-        console.log(test, p)
         test++;
     } while(!board.valid(p)&&test<5)
 
@@ -246,18 +269,50 @@ function lock()
 {
     lockDelay = 0;
     dropRate = 0;
-    board.lock(piece);
-    piece = new Piece(UserStorage.getPiece());
-    initDelay = 17*6/1000;
+    updateLineCleared(board.lock(piece));
+}
+
+function checkTopOut()
+{
+    if(!board.valid(piece))
+    {
+        cancelAnimationFrame(requestId);
+        requestId = undefined;
+    }
 }
 
 function updatePiece(p)
 {
+    if(ghostSwitch)board.hideGhost(piece);
     board.hidePiece(piece);
     piece.move(p);
+    if(ghostSwitch)board.drawGhost(piece);
     board.drawPiece(piece);
 }
 
+function updateLineCleared(a)
+{
+    if(a==0){
+        lineClearDelay = 0;
+        return;
+    } 
+    else 
+    {
+        lineClearDelay = 400;
+    }
+    UserStorage.clearedLines += a;
+    document.getElementById("lines").innerText = UserStorage.clearedLines;
+}
+
+function updateNexts()
+{
+    ctx.fillStyle = black;
+    ctx.fillRect(nextXOffset-nextBlockSizeOutline,yOffset,nextBlockSizeOutline*6,distBtwNexts*6+nextBlockSizeOutline)
+    for(var i = 0; i<UserStorage.nexts; i++)
+    {
+        board.drawNext(UserStorage.getNext(i+1),i)
+    }
+}
 function timeStamp()
 {
     return new Date().getTime();

@@ -4,6 +4,8 @@ class storage{
         this.score = 0;
         this.timer = 0;
         this.level = 5;
+        this.clearedLines = 0;
+        this.nexts = 6;
         this.initKeyMap();
 
         this.bag = [0,0,0,0,0,0,0];
