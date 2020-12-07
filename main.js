@@ -1,6 +1,7 @@
 var board;
 var UserStorage;
 var piece;
+var LineArr;
 
 var initDelay = 0;
 var LRframeCount = 0;
@@ -14,6 +15,9 @@ var lineClearDelay = -1;
 var gravity;
 var ghostSwitch = true;
 var requestId;
+
+var repeated, held;
+repeated = held = false;
 
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
@@ -37,6 +41,8 @@ function init()
     document.addEventListener('keyup',event=>
     {
         if(event.keyCode == KEY.SPACE) return;
+        else if(event.KeyCode == KEY.SHIFT) return;
+        else if(event.KeyCode == KEY.C) return;
         UserStorage.keyMap[event.keyCode] = false;
     });
 
@@ -70,34 +76,35 @@ function animate()
  * @param {number} dt 시간차
  */
 function update(dt){
-    initDelay -= dt;
-
-    checkTopOut();
+    initDelay--;
 
     inputCycle();
 
-    if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
-    {
-        lock();
-    }
-
     if(lineClearDelay>0)
     {
-        lineClearDelay-= dt;
-        if(lineClearDelay<0) lineClearDelay = 0;
+        lineClearDelay--;
+        for(var i = 0; i<LineArr.length;i++)
+            board.clearAnimation(LineArr[i], lineClearDelay);
         return;
     }
-    
-    if(lineClearDelay==0)
+        else if(lineClearDelay==0)
     {
-        piece = new Piece(UserStorage.getPiece());
-        updatePiece(piece);
-        updateNexts();
+        for(var i = 0; i<LineArr.length;i++)
+            board.clearLine(LineArr[i]);
         board.draw();
-        initDelay = 17*6/1000;
-        lineClearDelay = -1;
+        getNewPiece();
+
+        checkTopOut();
+        UserStorage.clearedLines += LineArr.length;
+        updateClearedLines();
     }
 
+    if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
+    {
+        lock(); 
+    }
+
+    if(lineClearDelay>0) return;
     if(initDelay>0) return;
 
     dropRate += dt;
@@ -111,13 +118,15 @@ function update(dt){
     {
         lockDelay = 0;
     }
+    
 }
-
+/* ~~~~~~~~~~~~~~~~~~~~MOVEMENTS~~~~~~~~~~~~~~~~~~~~ */
 function inputCycle()
 {
     moveLR();
     rotate();
     hardDrop();
+    hold();
 }
 
 function hardDrop()
@@ -132,6 +141,7 @@ function hardDrop()
         updatePiece(p);
         piece.hardDropped = true;
         UserStorage.keyMap[KEY.SPACE] = false;
+        UserStorage.keyMap[KEY.H] = false;
     }
 }
 
@@ -161,30 +171,23 @@ function moveDown()
 function moveLR()
 {
     let p;
+    let key;
     switch(UserStorage.checkLR())
     {
         case KEYSTATES.LR:
             LRframeCount++;
             break;
         case KEYSTATES.L:
-            if(LRframeCount==0
-                ||
-                LRframeCount>=DAS
-                    ?(LRframeCount-DAS)%ARR==0
-                    :false)
-            {
-                p = moves[KEY.LEFT](piece);
-            }
-            LRframeCount++;
-            break;
+            if(!key) key = KEY.LEFT;            
         case KEYSTATES.R:
+            if(!key) key = KEY.RIGHT;
             if(LRframeCount==0
                 ||
                 LRframeCount>=DAS
                     ?(LRframeCount-DAS)%ARR==0
                     :false)
             {
-                p = moves[KEY.RIGHT](piece);
+                p = moves[key](piece);
             }
             LRframeCount++;
             break;
@@ -265,11 +268,45 @@ function rotateAc(a)
     }
 }
 
+function hold()
+{
+    if(!UserStorage.checkHold()) return;
+    if(!repeated)
+    {
+        if(!held)
+        {
+            held = true;
+            UserStorage.hold = piece.typeId;
+            board.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
+            board.drawPiece(piece, DRAWMODE.HIDEPIECE);
+            board.drawPiece(piece, DRAWMODE.HIDEGHOST);
+            getNewPiece();
+        }
+        else
+        {
+            var temp = UserStorage.hold;
+            UserStorage.hold = piece.typeId;
+            updatePiece(new Piece(temp));
+            board.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
+        }
+        repeated = true;
+    }
+    UserStorage.keyMap[KEY.SHIFT] = false;
+    UserStorage.keyMap[KEY.C] = false;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~ LOGICS ~~~~~~~~~~~~~~~~~~~~ */
+
 function lock()
 {
     lockDelay = 0;
     dropRate = 0;
-    updateLineCleared(board.lock(piece));
+    LineArr = board.lock(piece);
+    if(LineArr.length==0){
+        lineClearDelay = 0;
+        return;
+    }
+    lineClearDelay = lineClearFrames;
 }
 
 function checkTopOut()
@@ -281,27 +318,33 @@ function checkTopOut()
     }
 }
 
-function updatePiece(p)
+function getNewPiece()
 {
-    if(ghostSwitch)board.hideGhost(piece);
-    board.hidePiece(piece);
-    piece.move(p);
-    if(ghostSwitch)board.drawGhost(piece);
-    board.drawPiece(piece);
+    piece = new Piece(UserStorage.getPiece());
+    updatePiece(piece);
+    updateNexts();
+    if(UserStorage.hold)board.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
+    repeated = false;
+    initDelay = entryDelay;
+    lineClearDelay = -1;
 }
 
-function updateLineCleared(a)
+function timeStamp()
 {
-    if(a==0){
-        lineClearDelay = 0;
-        return;
-    } 
-    else 
-    {
-        lineClearDelay = 400;
-    }
-    UserStorage.clearedLines += a;
-    document.getElementById("lines").innerText = UserStorage.clearedLines;
+    return new Date().getTime();
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~ GRAPHICS & INFOS ~~~~~~~~~~~~~~~~~~~~ */
+
+function updatePiece(p)
+{
+    if(ghostSwitch) board.drawPiece(piece, DRAWMODE.HIDEGHOST);
+    board.drawPiece(piece, DRAWMODE.HIDEPIECE);
+
+    piece.move(p);
+
+    if(ghostSwitch) board.drawPiece(piece, DRAWMODE.DRAWGHOST);
+    board.drawPiece(piece, DRAWMODE.DRAWPIECE);
 }
 
 function updateNexts()
@@ -313,7 +356,8 @@ function updateNexts()
         board.drawNext(UserStorage.getNext(i+1),i)
     }
 }
-function timeStamp()
+
+function updateClearedLines()
 {
-    return new Date().getTime();
+    document.getElementById("lines").innerText = UserStorage.clearedLines;
 }

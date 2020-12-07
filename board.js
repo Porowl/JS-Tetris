@@ -5,6 +5,9 @@ class Board{
         this.draw();
     }
 
+    /**
+     * Update Field Graphics
+     */
     draw(){
         this.ctx.fillStyle = guideline;
         this.ctx.fillRect(xOffset,yOffset,w*blockSizeOutline-1,visibleH*blockSizeOutline);
@@ -20,6 +23,9 @@ class Board{
         }
     }
 
+    /**
+     * 
+     */
     initBoard(){
         var array = Array(h);
         for(var i = 0;i<h;i++){
@@ -42,10 +48,11 @@ class Board{
                 }
             }
         }
-        var counter = 0;
-        for(var index = p.y+20; index<Math.min(p.y+24,h); index++)
+        var counter = Array();
+        var max = Math.min(p.y+24,h)
+        for(var i = p.y+20; i<max; i++)
         {
-            counter += this.checkLine(index);
+            if(this.checkLine(i)) counter.push(i);
         }
         return counter;
     }
@@ -61,8 +68,7 @@ class Board{
                 continue;
             }
         }
-        if(filled) this.clearLine(y);
-        return filled?1:0;
+        return filled;
     }
 
     clearLine(i)
@@ -74,10 +80,36 @@ class Board{
                 this.board[y][x] = this.board[y-1][x];
             }
         }
-        this.clearAnimation(i);
     }
 
-    drawPiece(piece){
+    drawPiece(piece, MODE){
+        let ghostToggled = false;
+        switch(MODE)
+        {
+            case DRAWMODE.DRAWPIECE:
+                this.ctx.fillStyle = piece.color;
+                break;
+            case DRAWMODE.DRAWGHOST:
+                this.ctx.fillStyle = ghost;
+                ghostToggled = true;
+                break;
+            case DRAWMODE.HIDEPIECE:
+                this.ctx.fillStyle = black; 
+                break;
+            case DRAWMODE.HIDEGHOST:
+                this.ctx.fillStyle = black;
+                ghostToggled = true;
+                break;
+        }
+        if(ghostToggled)
+        {
+            let p = {...piece};
+            while(this.canMoveDown(p))
+            {
+                p.y++;
+            }
+            piece = p;
+        }
         for(var i = 0;i<4;i++)
         {
             for(var j = 0;j<4;j++)
@@ -85,77 +117,8 @@ class Board{
                 if(piece.shape & (0x8000 >> (i*4+j)))
                 {
                     if(piece.y+i>=0){
-                        this.ctx.fillStyle = piece.color;
                         var x = xOffset+(piece.x+j)*blockSizeOutline;
                         var y = yOffset+(piece.y+i)*blockSizeOutline;
-                        var w = blockSize; 
-                        var h = blockSize;
-                        this.ctx.fillRect(x,y,w,h);}
-                }
-            }
-        }
-    }
-
-    hidePiece(piece){
-        for(var i = 0;i<4;i++)
-        {
-            for(var j = 0;j<4;j++)
-            {
-                if(piece.shape & (0x8000 >> (i*4+j)))
-                {
-                    if(piece.y+i>=0){
-                        this.ctx.fillStyle = black;
-                        var x = xOffset+(piece.x+j)*blockSizeOutline;
-                        var y = yOffset+(piece.y+i)*blockSizeOutline;
-                        var w = blockSize; 
-                        var h = blockSize;
-                        this.ctx.fillRect(x,y,w,h);
-                    }
-                }
-            }
-        }
-    }
-
-    drawGhost(piece){
-        let p = {...piece};
-        while(this.canMoveDown(p))
-        {
-            p.y++;
-        }
-        for(var i = 0;i<4;i++)
-        {
-            for(var j = 0;j<4;j++)
-            {
-                if(p.shape & (0x8000 >> (i*4+j)))
-                {
-                    if(p.y+i>=0){
-                        this.ctx.fillStyle = ghost;
-                        var x = xOffset+(p.x+j)*blockSizeOutline;
-                        var y = yOffset+(p.y+i)*blockSizeOutline;
-                        var w = blockSize; 
-                        var h = blockSize;
-                        this.ctx.fillRect(x,y,w,h);}
-                }
-            }
-        }
-    }
-
-    hideGhost(piece){
-        let p = {...piece};
-        while(this.canMoveDown(p))
-        {
-            p.y++;
-        }
-        for(var i = 0;i<4;i++)
-        {
-            for(var j = 0;j<4;j++)
-            {
-                if(p.shape & (0x8000 >> (i*4+j)))
-                {
-                    if(p.y+i>=0){
-                        this.ctx.fillStyle = black;
-                        var x = xOffset+(p.x+j)*blockSizeOutline;
-                        var y = yOffset+(p.y+i)*blockSizeOutline;
                         var w = blockSize; 
                         var h = blockSize;
                         this.ctx.fillRect(x,y,w,h);}
@@ -208,20 +171,56 @@ class Board{
         }
     }
 
-    clearAnimation(l)
+    drawHold(typeId, mode)
     {
+        let color;
+        switch(mode)
+        {
+            case DRAWMODE.DRAWPIECE:
+                color = colorMap[typeId];
+                break;
+            case DRAWMODE.DRAWGHOST:
+                color = ghost;
+                break;
+        }
 
+        
+        for(var i = 0;i<4;i++)
+        {
+            for(var j = 0;j<4;j++)
+            {
+                var x = holdXOffset+j*holdBlockSizeOutline;
+                var y = holdYOffset+i*holdBlockSizeOutline;
+                var w = holdBlockSize; 
+                var h = holdBlockSize;
+                if(pieceMap[typeId][0] & (0x8000 >> (i*4+j)))
+                {
+                    this.ctx.fillStyle = black;
+                    console.log(i, j);
+                }
+                else 
+                {
+                    this.ctx.fillSytle = color;
+                }
+                this.ctx.fillRect(x,y,w,h);
+            }
+        }
+
+        console.log(typeId, color);
+    }
+
+    clearAnimation(l, i)
+    {
         var x = xOffset
         var y = yOffset + (l-20) * blockSizeOutline;
-        var w = blockSizeOutline*w-1
-        var h = blockSize
+        var width = blockSizeOutline*w-1;
+        var height = blockSize;
 
-        ctx.fillStyle = lineClearWhite;
-        for(var i = 1; i<=10; i++)
-            setTimeout(ctx.fillRect(x,y,w,h),17*i);
+        if(i>lineClearFrames/2)
+            ctx.fillStyle = lineClearWhite;
+        else 
+            ctx.fillStyle = lineClearBlack;
 
-        ctx.fillStyle = lineClearBlack;
-        for(var i = 11; i<=20; i++)
-            setTimeout(ctx.fillRect(x,y,w,h),17*i);
+        this.ctx.fillRect(x,y,width,height);
     }
 }

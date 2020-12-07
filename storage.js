@@ -3,9 +3,10 @@ class storage{
         this.index = -1;
         this.score = 0;
         this.timer = 0;
-        this.level = 5;
+        this.level = 0;
         this.clearedLines = 0;
         this.nexts = 6;
+        this.hold;
         this.initKeyMap();
 
         this.bag = [0,0,0,0,0,0,0];
@@ -77,10 +78,16 @@ class storage{
     }
 
     checkRot(){
-        if(this.keyMap[KEY.UP]&&this.keyMap[KEY.C])
+        if((this.keyMap[KEY.UP]||this.keyMap[KEY.X])
+            &&(this.keyMap[KEY.C]||this.keyMap[KEY.CTRL]))
             return KEYSTATES.UC;
-        else if(this.keyMap[KEY.UP]) return KEYSTATES.U;
-        else if(this.keyMap[KEY.C]) return KEYSTATES.C;
+        else if(this.keyMap[KEY.UP]||this.keyMap[KEY.X]) return KEYSTATES.U;
+        else if(this.keyMap[KEY.C]||this.keyMap[KEY.CTRL]) return KEYSTATES.C;
         return -1;
+    }
+    
+    checkHold()
+    {
+        return this.keyMap[KEY.SHIFT]||this.keyMap[KEY.C]
     }
 }

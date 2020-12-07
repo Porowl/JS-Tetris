@@ -2,12 +2,17 @@ const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
 
 const h = 40;
-const visibleH = 20;
 const w = 10;
+
+const visibleH = 20;
+
 const blockSize = 20;
-const blockSizeOutline = blockSize+1;
 const nextBlockSize = 8;
+const holdBlockSize = 10;
+
+const blockSizeOutline = blockSize+1;
 const nextBlockSizeOutline = nextBlockSize+1;
+const holdBlockSizeOutline = holdBlockSize+1;
 
 const xOffset = 100;
 const yOffset = 20;
@@ -18,9 +23,14 @@ const nextXOffset = xOffset
 const nextYOffset = yOffset+nextBlockSizeOutline;
 const distBtwNexts = 3*nextBlockSizeOutline;
 
+const holdXOffset = xOffset - 50;
+const holdYOffset = yOffset;
+
 const DAS = 12;
 const ARR = 2;
 const entryDelay = 6;
+
+const lineClearFrames = 20;
 
 const GRAVITY = [
     1.0,
@@ -46,14 +56,18 @@ const GRAVITY = [
 ]
 
 const KEY = {
-    SPACE: 32,
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40,
-    C: 67,
-    G: 78,
-    P: 80
+    SHIFT:  16,     //hold
+    CTRL:   17,     //rotate counterclockwise
+    SPACE:  32,     //harddrop
+    LEFT:   37,
+    UP:     38,     //rotate clockwise
+    RIGHT:  39,
+    DOWN:   40,     //softdrop
+    C:      67,     //hold
+    G:      78,     //Toggle Ghost
+    P:      80,     //Pause
+    X:      88,     //rotate clockwise
+    Z:      90      //rotate counterclockwise
 };
 
 const KEYSTATES = {
@@ -64,6 +78,13 @@ const KEYSTATES = {
     U : 4,
     C : 5
 };
+
+const DRAWMODE = {
+    DRAWPIECE: 0,
+    DRAWGHOST: 1,
+    HIDEPIECE: 2,
+    HIDEGHOST: 3
+}
 
 const colorMap =  [
                     "rgb(000,240,000)",     //S
@@ -78,8 +99,8 @@ const colorMap =  [
 const black =     "rgb(000,000,000)";
 const guideline = "rgb(040,040,040)";
 const ghost =     "rgb(080,080,080)";
-const lineClearWhite = "rgba(255,255,255,25)";
-const lineClearBlack = "rgba(000,000,000,25)";
+const lineClearWhite = "rgba(255,255,255,0.15)";
+const lineClearBlack = "rgba(000,000,000,0.15)";
 
 const pieceMap = [
     [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
@@ -96,6 +117,7 @@ const moves = {
     [KEY.RIGHT]: p=>({...p,x:p.x+1}),
     [KEY.DOWN]: p=>({...p,y:p.y+1}),
 }
+
 const Offsets = [
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0 -> 1
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 0
