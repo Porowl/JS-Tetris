@@ -27,7 +27,7 @@ repeated = held = false;
  */
 function init()
 {
-    board = new Board(ctx);   
+    board = new Board(ctx, 1);   
     UserStorage = new storage(); 
     piece = new Piece(UserStorage.getPiece());
     updatePiece(piece);
@@ -65,8 +65,6 @@ function animate()
     last = now;
 
     update(Math.min(1,dt));
-    //document.getElementById("UC").innerText = "RF : " + RotateFrameCount;
-    //document.getElementById("LR").innerText = "LRF: " + LRframeCount;
     if(requestId) requestID = requestAnimationFrame(animate);
 }
 
@@ -121,6 +119,10 @@ function update(dt){
     
 }
 /* ~~~~~~~~~~~~~~~~~~~~MOVEMENTS~~~~~~~~~~~~~~~~~~~~ */
+
+/**
+ * 각 프레임마다 유저의 키 입력을 읽습니다.
+ */
 function inputCycle()
 {
     moveLR();
@@ -129,6 +131,9 @@ function inputCycle()
     hold();
 }
 
+/**
+ * 하드 드롭을 실행합니다.
+ */
 function hardDrop()
 {
     if(UserStorage.keyMap[KEY.SPACE])
@@ -145,6 +150,9 @@ function hardDrop()
     }
 }
 
+/**
+ * 자동으로 블럭이 내려가는 논리 함수입니다.
+ */
 function moveDownCycle()
 {
     if(UserStorage.keyMap[KEY.DOWN]&&gravity>2/60)
@@ -159,6 +167,9 @@ function moveDownCycle()
 
 }
 
+/**
+ * 블럭을 내리는 함수입니다.
+ */
 function moveDown()
 {
     if(board.canMoveDown(piece))
@@ -168,6 +179,9 @@ function moveDown()
     }
 }
 
+/**
+ * 블럭을 양 옆으로 움직이는 논리 함수입니다.
+ */
 function moveLR()
 {
     let p;
@@ -202,6 +216,9 @@ function moveLR()
     }
 }
 
+/**
+ * 블럭을 회전시키는 논리 함수입니다.
+ */
 function rotate()
 {
     let state = UserStorage.checkRot();
@@ -238,9 +255,10 @@ function rotate()
         RotateFrameCount = 0;
     }
 }
+
 /**
- * Executes action of the rotation.
- * @param {number} a 0 means clockwise, 1 means anti-clockwise;
+ * 블럭을 회전하는 함수입니다.
+ * @param {number} a 0 은 시계방향, 1은 반시계방향을 의미합니다.
  */
 function rotateAc(a)
 {
@@ -268,6 +286,9 @@ function rotateAc(a)
     }
 }
 
+/**
+ * 블럭을 '저장'하는 함수입니다.
+ */
 function hold()
 {
     if(!UserStorage.checkHold()) return;
@@ -286,7 +307,9 @@ function hold()
         {
             var temp = UserStorage.hold;
             UserStorage.hold = piece.typeId;
-            updatePiece(new Piece(temp));
+            var p = new Piece(temp)
+            updatePiece(p);
+            piece = p;
             board.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
         }
         repeated = true;
@@ -297,6 +320,9 @@ function hold()
 
 /* ~~~~~~~~~~~~~~~~~~~~ LOGICS ~~~~~~~~~~~~~~~~~~~~ */
 
+/**
+ * 블럭을 필드에 고정시키는 함수입니다.
+ */
 function lock()
 {
     lockDelay = 0;
@@ -309,6 +335,9 @@ function lock()
     lineClearDelay = lineClearFrames;
 }
 
+/**
+ * 게임 오버를 확정짓는 함수입니다.
+ */
 function checkTopOut()
 {
     if(!board.valid(piece))
@@ -318,6 +347,9 @@ function checkTopOut()
     }
 }
 
+/**
+ * 새로운 블럭을 가져오는 함수입니다.
+ */
 function getNewPiece()
 {
     piece = new Piece(UserStorage.getPiece());
@@ -336,6 +368,10 @@ function timeStamp()
 
 /* ~~~~~~~~~~~~~~~~~~~~ GRAPHICS & INFOS ~~~~~~~~~~~~~~~~~~~~ */
 
+/**
+ * 블럭 이동을 그래픽적으로 표시합니다.
+ * @param {Piece} p 이동 목표인 블럭 p 입니다.
+ */
 function updatePiece(p)
 {
     if(ghostSwitch) board.drawPiece(piece, DRAWMODE.HIDEGHOST);
@@ -347,16 +383,21 @@ function updatePiece(p)
     board.drawPiece(piece, DRAWMODE.DRAWPIECE);
 }
 
+/**
+ * 다음 블럭 n 개를 표시합니다. n은 설정을 통해 최대 6개까지 표시할 수 있습니다.
+ */
 function updateNexts()
 {
-    ctx.fillStyle = black;
-    ctx.fillRect(nextXOffset-nextBlockSizeOutline,yOffset,nextBlockSizeOutline*6,distBtwNexts*6+nextBlockSizeOutline)
-    for(var i = 0; i<UserStorage.nexts; i++)
+    board.refreshNexts();
+    for(var i = 0; i<Math.max(UserStorage.nexts,6); i++)
     {
         board.drawNext(UserStorage.getNext(i+1),i)
     }
 }
 
+/**
+ * 라인 몇 개를 지웠는지 표시합니다.
+ */
 function updateClearedLines()
 {
     document.getElementById("lines").innerText = UserStorage.clearedLines;

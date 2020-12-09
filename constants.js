@@ -7,8 +7,8 @@ const w = 10;
 const visibleH = 20;
 
 const blockSize = 20;
-const nextBlockSize = 8;
-const holdBlockSize = 10;
+const nextBlockSize = 10;
+const holdBlockSize = 15;
 
 const blockSizeOutline = blockSize+1;
 const nextBlockSizeOutline = nextBlockSize+1;
@@ -19,11 +19,11 @@ const yOffset = 20;
 
 const nextXOffset = xOffset 
                     + blockSizeOutline*w 
-                    + 50;
-const nextYOffset = yOffset+nextBlockSizeOutline;
+                    + 20;
+const nextYOffset = yOffset;
 const distBtwNexts = 3*nextBlockSizeOutline;
 
-const holdXOffset = xOffset - 50;
+const holdXOffset = xOffset - 80;
 const holdYOffset = yOffset;
 
 const DAS = 12;
@@ -81,8 +81,8 @@ const KEYSTATES = {
 
 const DRAWMODE = {
     DRAWPIECE: 0,
-    DRAWGHOST: 1,
-    HIDEPIECE: 2,
+    HIDEPIECE: 1,
+    DRAWGHOST: 2,
     HIDEGHOST: 3
 }
 
@@ -109,7 +109,7 @@ const pieceMap = [
     [ 0x2E00, 0x4460, 0xE800, 0xC440 ], // 'L' 
     [ 0x8E00, 0x6440, 0xE200, 0x44C0 ], // 'J' 
     [ 0x0F00, 0x2222, 0x00F0, 0x4444 ], // 'I' 
-    [ 0xCC00, 0xCC00, 0xCC00, 0xCC00 ]  // 'O'
+    [ 0x6600, 0x6600, 0x6600, 0x6600 ]  // 'O'
 ];
 
 const moves = {
