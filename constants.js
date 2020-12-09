@@ -74,9 +74,9 @@ const KEYSTATES = {
     LR: 0,
     L : 1,
     R : 2,
-    UC : 3,
+    UZ : 3,
     U : 4,
-    C : 5
+    Z : 5
 };
 
 const DRAWMODE = {

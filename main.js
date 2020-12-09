@@ -222,7 +222,7 @@ function moveLR()
 function rotate()
 {
     let state = UserStorage.checkRot();
-    if(state == KEYSTATES.UC)
+    if(state == KEYSTATES.UZ)
     {
         RotateFrameCount++;
     }
@@ -238,7 +238,7 @@ function rotate()
         }
         RotateFrameCount++;
     }
-    else if (state == KEYSTATES.C)
+    else if (state == KEYSTATES.Z)
     {
         if(RotateFrameCount==0
             ||

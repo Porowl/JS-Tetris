@@ -129,10 +129,10 @@ class storage{
      */
     checkRot(){
         if((this.keyMap[KEY.UP]||this.keyMap[KEY.X])
-            &&(this.keyMap[KEY.C]||this.keyMap[KEY.CTRL]))
-            return KEYSTATES.UC;
+            &&(this.keyMap[KEY.Z]||this.keyMap[KEY.CTRL]))
+            return KEYSTATES.UZ;
         else if(this.keyMap[KEY.UP]||this.keyMap[KEY.X]) return KEYSTATES.U;
-        else if(this.keyMap[KEY.C]||this.keyMap[KEY.CTRL]) return KEYSTATES.C;
+        else if(this.keyMap[KEY.Z]||this.keyMap[KEY.CTRL]) return KEYSTATES.Z;
         return -1;
     }
     
