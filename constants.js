@@ -1,5 +1,7 @@
 const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
+const scorebox = document.getElementById("score");
+const linebox = document.getElementById("lines");
 
 const h = 40;
 const w = 10;
@@ -10,7 +12,7 @@ const blockSize = 20;
 const nextBlockSize = 10;
 const holdBlockSize = 15;
 
-const blockSizeOutline = blockSize+1;
+const blockSizeOutline = blockSize+2;
 const nextBlockSizeOutline = nextBlockSize+1;
 const holdBlockSizeOutline = holdBlockSize+1;
 
@@ -25,6 +27,9 @@ const distBtwNexts = 3*nextBlockSizeOutline;
 
 const holdXOffset = xOffset - 80;
 const holdYOffset = yOffset;
+
+const playerOffset = 500;
+
 
 const DAS = 12;
 const ARR = 2;
@@ -86,15 +91,39 @@ const DRAWMODE = {
     HIDEGHOST: 3
 }
 
+const Score = {
+    SINGLE: 1,
+    DOUBLE: 2,
+    TRIPLE: 3,
+    TETRIS: 4,
+    MTS: 5,
+    MTSS: 6,
+    TS: 7,
+    TSS: 8,
+    TSD: 9,
+    TST: 10,
+}
+
+
 const colorMap =  [
                     "rgb(000,240,000)",     //S
                     "rgb(240,000,000)",     //Z
                     "rgb(160,000,241)",     //T
                     "rgb(239,160,000)",     //L
                     "rgb(000,000,240)",     //J
-                    "rgb(054,101,102)",     //I
+                    "rgb(000,224,187)",     //I
                     "rgb(240,240,000)"      //O
                 ];
+
+const p1 = [
+                "rgb(000,161,224)",
+                "rgb(004,107,148)"
+            ];
+
+const p2 = [
+                "rgb(225,154,046)",
+                "rgb(181,112,038)"
+            ];
 
 const black =     "rgb(000,000,000)";
 const guideline = "rgb(040,040,040)";

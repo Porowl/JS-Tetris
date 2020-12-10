@@ -2,9 +2,10 @@ class Board{
     constructor(ctx, player){
         this.ctx = ctx;
         this.board = this.initBoard();
+        this.player = player;
+        this.offset = player==1?0:playerOffset; 
         this.initGraphics();
         this.draw();
-        this.player = player;
     }
 
     /**
@@ -12,24 +13,52 @@ class Board{
      */
     initGraphics()
     {
-        this.ctx.font = "18px 'Press Start 2P'";
-        this.ctx.textBaseline = 'top';
-        this.ctx.fillText('HOLD', holdXOffset, holdYOffset);
-        this.ctx.fillText('NEXT', nextXOffset, nextYOffset)
+        ctx.font = "16px 'Press Start 2P'";
+        ctx.textBaseline = 'top';
+        ctx.fillText('HOLD', holdXOffset + this.offset, holdYOffset);
+        ctx.fillText('NEXT', nextXOffset + this.offset, nextYOffset)
+        ctx.fillRect(holdXOffset + this.offset ,holdYOffset+30,holdBlockSizeOutline*4,holdBlockSizeOutline*4)
         this.refreshNexts();
 
+        let color = (this.player==1?p1:p2)
+
+        this.drawOutline(5, 7, color[1]);
+        this.drawOutline(2, 4, color[0]);
+        this.drawOutline(10, 5, color[0]);
+    }
+
+    drawOutline(rad, size, color)
+    {
+        let L = xOffset + this.offset;
+        let U = yOffset;
+        let R = xOffset+w*blockSizeOutline + this.offset;
+        let D = yOffset+visibleH*blockSizeOutline;
+
+        let ctx = this.ctx;
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.arc(L,U,rad,Math.PI,Math.PI*3/2,false);
+        ctx.lineTo(R,U-rad);
+        ctx.arc(R,U,rad,Math.PI*3/2,0,false);
+        ctx.lineTo(R+rad,D);
+        ctx.arc(R,D,rad,0,Math.PI/2,false);
+        ctx.lineTo(L,D+rad)
+        ctx.arc(L,D,rad,Math.PI/2,Math.PI,false);
+        ctx.lineTo(L-rad,U)
+        ctx.lineWidth = size;
+        ctx.stroke();
     }
     /**
      * 필드를 그립니다.
      */
     draw(){
         this.ctx.fillStyle = guideline;
-        this.ctx.fillRect(xOffset,yOffset,w*blockSizeOutline-1,visibleH*blockSizeOutline);
+        this.ctx.fillRect(xOffset + this.offset,yOffset,w*blockSizeOutline,visibleH*blockSizeOutline);
 
         for(var i = 0;i<visibleH;i++){
             for(var j = 0; j<w; j++){
-                var x = xOffset + j * blockSizeOutline;
-                var y = yOffset + i * blockSizeOutline;
+                var x = xOffset + j * blockSizeOutline + 1 + this.offset;
+                var y = yOffset + i * blockSizeOutline + 1;
                 let color = this.board[i+20][j] - 1;
                 this.ctx.fillStyle = color<0?black:colorMap[color];
                 this.ctx.fillRect(x,y,blockSize,blockSize);
@@ -56,31 +85,54 @@ class Board{
     /**
      * 보드에 해당 피스를 '고정'시킵니다.
      * @param {Piece} p 
-     * @return {int[]} 채워진 행들의 배열
+     * @return {Number[]} 채워진 행들의 배열
      */
     lock(p){
         for(var i = 0;i<4;i++){
             for(var j = 0; j<4;j++){
                 if(p.shape & (0x8000 >> (i*4+j)))
                 {
-                    var x = p.x + j;
+                    var x = p.x + j + this.offset;
                     var y = p.y + i + 20;
                     this.board[y][x] = p.typeId+1;    
                 }
             }
         }
-        var counter = Array();
+
+        let tSpinCounter = 0;
+        let tSpinMini = false;
+        if(p.typeId==2)
+        {
+            tSpinCounter == 0;
+            let x = p.x;
+            let y = p.y;
+            if(!this.isNotBlocked(x,y)) tSpinCounter++;
+            if(!this.isNotBlocked(x+2,y)) tSpinCounter++;
+            if(!this.isNotBlocked(x,y+2)) {
+                tSpinCounter++;
+                tSpinMini = true;
+            }
+            if(!this.isNotBlocked(x+2,y+2)){
+                tSpinCounter++;
+                tSpinMini = true;
+            };
+        }
+
+        var counter = {lines: Array()}
+        counter.tSpinCounter = tSpinCounter;
+        counter.tSpinMini = tSpinMini;
+
         var max = Math.min(p.y+24,h)
         for(var i = p.y+20; i<max; i++)
         {
-            if(this.checkLine(i)) counter.push(i);
+            if(this.checkLine(i)) counter.lines.push(i);
         }
         return counter;
     }
 
     /**
      * 해당 행이 채워졌는지 확인합니다.
-     * @param {int} y 번째 행
+     * @param {Number} y 번째 행
      * @return {boolean} 검사 값
      */
     checkLine(y)
@@ -99,7 +151,7 @@ class Board{
 
     /**
      * 해당 행을 지우고 위 블럭들을 한 칸 아래로 내립니다.
-     * @param {int} i 번째 행 
+     * @param {Number} i 번째 행 
      */
     clearLine(i)
     {
@@ -119,7 +171,7 @@ class Board{
      * DRAWMODE.HIDEPIECE 블럭을 화면에서 가립니다.
      * DRAWMODE.HIDEGHOST 고스트를 화면에서 가립니다.
      * @param {Piece} piece 
-     * @param {int} MODE 
+     * @param {Number} MODE 
      */
     drawPiece(piece, MODE){
         let ghostToggled = false;
@@ -156,8 +208,8 @@ class Board{
                 if(piece.shape & (0x8000 >> (i*4+j)))
                 {
                     if(piece.y+i>=0){
-                        var x = xOffset+(piece.x+j)*blockSizeOutline;
-                        var y = yOffset+(piece.y+i)*blockSizeOutline;
+                        var x = xOffset+(piece.x+j)*blockSizeOutline + 1 + this.offset;
+                        var y = yOffset+(piece.y+i)*blockSizeOutline + 1;
                         var w = blockSize; 
                         var h = blockSize;
                         this.ctx.fillRect(x,y,w,h);}
@@ -168,14 +220,14 @@ class Board{
 
     /**
      * 해당 블럭이 필드 내에 존재할 수 있는지 여부를 확인합니다.
-     * @param {Piece} p 확인할 블럭
+     * @param {Object} p - 확인할 블럭
      */
     valid(p){
         for(var i = 0;i<4;i++){
             for(var j = 0; j<4;j++){
                 if(p.shape & (0x8000 >> (i*4+j)))
                 {
-                    var x = p.x + j;
+                    var x = p.x + j + this.offset;
                     var y = p.y + i;     
                     if(!this.isNotBlocked(x,y)) return false;
                 }
@@ -186,8 +238,8 @@ class Board{
 
     /**
      * 해당 위치에 이미 블럭이 있는지 검사합니다.
-     * @param {int} x 번째 행
-     * @param {int} y 번째 열
+     * @param {Number} x x번째 행
+     * @param {Number} y y번째 열
      * @return {boolean} 검사 값
      */
     isNotBlocked(x,y){
@@ -208,8 +260,8 @@ class Board{
 
     /**
      * 다음 블럭들을 표시합니다. 
-     * @param {int} typeId 표시할 블럭
-     * @param {int} index 번째 블럭
+     * @param {Number} typeId 표시할 블럭
+     * @param {Number} index 번째 블럭
      */
     drawNext(typeId,index)
     {
@@ -220,7 +272,7 @@ class Board{
                 if(pieceMap[typeId][0] & (0x8000 >> (i*4+j)))
                 {
                     this.ctx.fillStyle = colorMap[typeId];
-                    var x = nextXOffset+(j+1)*nextBlockSizeOutline;
+                    var x = nextXOffset+(j+1)*nextBlockSizeOutline + this.offset;
                     var y = nextYOffset+(i+1)*nextBlockSizeOutline+distBtwNexts*index+30;
                     var w = nextBlockSize; 
                     var h = nextBlockSize;
@@ -232,8 +284,8 @@ class Board{
 
     /**
      * 저장된 블럭을 표시합니다.
-     * @param {int} typeId 표시할 블럭
-     * @param {int} mode 표시 모드
+     * @param {Number} typeId 표시할 블럭
+     * @param {Number} mode 표시 모드
      */
     drawHold(typeId, mode)
     {
@@ -252,7 +304,7 @@ class Board{
         {
             for(var j = 0;j<4;j++)
             {
-                var x = holdXOffset+j*holdBlockSizeOutline;
+                var x = holdXOffset+j*holdBlockSizeOutline + this.offset;
                 var y = holdYOffset+i*holdBlockSizeOutline+30;
                 var w = holdBlockSize; 
                 var h = holdBlockSize;
@@ -268,12 +320,12 @@ class Board{
 
     /**
      * 블럭이 지워지는 애니메이션을 출력합니다.
-     * @param {int} l 번째 행
-     * @param {int} i 번째 프레임
+     * @param {Number} l 번째 행
+     * @param {Number} i 번째 프레임
      */
     clearAnimation(l, i)
     {
-        var x = xOffset
+        var x = xOffset + this.offset;
         var y = yOffset + (l-20) * blockSizeOutline;
         var width = blockSizeOutline*w-1;
         var height = blockSize;
@@ -293,7 +345,7 @@ class Board{
     {
         this.ctx.fillStyle = black;
         this.ctx.fillRect(
-                        nextXOffset,
+                        nextXOffset + this.offset,
                         yOffset+30,
                         nextBlockSizeOutline*6,
                         distBtwNexts*6+nextBlockSizeOutline

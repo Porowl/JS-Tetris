@@ -15,6 +15,7 @@ var lineClearDelay = -1;
 var gravity;
 var ghostSwitch = true;
 var requestId;
+var lastTSpinTest = 0;
 
 var repeated, held;
 repeated = held = false;
@@ -27,7 +28,7 @@ repeated = held = false;
  */
 function init()
 {
-    board = new Board(ctx, 1);   
+    board = new Board(ctx, 1);
     UserStorage = new storage(); 
     piece = new Piece(UserStorage.getPiece());
     updatePiece(piece);
@@ -81,20 +82,22 @@ function update(dt){
     if(lineClearDelay>0)
     {
         lineClearDelay--;
-        for(var i = 0; i<LineArr.length;i++)
-            board.clearAnimation(LineArr[i], lineClearDelay);
+        for(var i = 0; i<LineArr.lines.length;i++)
+            board.clearAnimation(LineArr.lines[i], lineClearDelay);
         return;
     }
-        else if(lineClearDelay==0)
+    else if(lineClearDelay==0)
     {
-        for(var i = 0; i<LineArr.length;i++)
-            board.clearLine(LineArr[i]);
+        for(var i = 0; i<LineArr.lines.length;i++)
+            board.clearLine(LineArr.lines[i]);
         board.draw();
-        getNewPiece();
 
-        checkTopOut();
-        UserStorage.clearedLines += LineArr.length;
+        UserStorage.clearedLines += LineArr.lines.length;
         updateClearedLines();
+        updateScore();
+
+        getNewPiece();
+        checkTopOut();
     }
 
     if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
@@ -105,8 +108,7 @@ function update(dt){
     if(lineClearDelay>0) return;
     if(initDelay>0) return;
 
-    dropRate += dt;
-    moveDownCycle();
+    moveDownCycle(dt);
     
     if(!board.canMoveDown(piece))
     {
@@ -139,11 +141,15 @@ function hardDrop()
     if(UserStorage.keyMap[KEY.SPACE])
     {
         let p = {...piece};
+        let counter = 0;
         while(board.canMoveDown(p))
         {
             p.y++;
+            counter++;
         }
         updatePiece(p);
+        UserStorage.addDropScore(counter*2)
+
         piece.hardDropped = true;
         UserStorage.keyMap[KEY.SPACE] = false;
         UserStorage.keyMap[KEY.H] = false;
@@ -153,18 +159,21 @@ function hardDrop()
 /**
  * 자동으로 블럭이 내려가는 논리 함수입니다.
  */
-function moveDownCycle()
+function moveDownCycle(dt)
 {
     if(UserStorage.keyMap[KEY.DOWN]&&gravity>2/60)
     {
-        moveDown()
+        if(moveDown()){
+            UserStorage.addDropScore(1)
+            updateScore();
+        } 
         return;
     }
+    dropRate += dt;
     while(dropRate>gravity){
         dropRate -= gravity;
         moveDown();
     }
-
 }
 
 /**
@@ -176,7 +185,9 @@ function moveDown()
     {
         let p = moves[KEY.DOWN](piece);
         updatePiece(p);
+        return true;
     }
+    return false;
 }
 
 /**
@@ -282,6 +293,7 @@ function rotateAc(a)
         if(board.valid(p))
         {
             updatePiece(p)
+            lastTSpinTest = test;
         };
     }
 }
@@ -328,7 +340,7 @@ function lock()
     lockDelay = 0;
     dropRate = 0;
     LineArr = board.lock(piece);
-    if(LineArr.length==0){
+    if(LineArr.lines.length==0){
         lineClearDelay = 0;
         return;
     }
@@ -400,5 +412,47 @@ function updateNexts()
  */
 function updateClearedLines()
 {
-    document.getElementById("lines").innerText = UserStorage.clearedLines;
+    linebox.innerText = UserStorage.clearedLines;
+}
+function calcScore()
+{
+    let lines = LineArr.lines.length;
+    let tspin = LineArr.tSpinCounter>=3;
+    let mini = LineArr.tSpinMini;
+
+    let result;
+    switch(lines)
+    {
+        case 0:
+            if(tspin)
+                result = mini?Score.MTS:Score.TS;
+            break;
+        case 1:
+            if(tspin)
+                result = mini?Score.MTSS:Score.TSS;
+            else 
+                result = Score.SINGLE;
+            break;
+        case 2:
+            if(tspin)
+                result = Score.TSD;
+            else
+                result = Score.DOUBLE;
+            break;
+        case 3:
+            if(tspin)
+                result = Score.TST;
+            else
+                result = Score.TRIPLE;
+            break;
+        case 4:
+            result = Score.TETRIS
+    }
+    if(result) UserStorage.addScore(result);
+    updateScore()
+}
+
+function updateScore()
+{
+    scorebox.innerText = UserStorage.score;
 }

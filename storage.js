@@ -7,6 +7,7 @@ class storage{
         this.clearedLines = 0;
         this.nexts = 6;
         this.hold;
+        this.b2b = false;
         this.initKeyMap();
 
         this.bag = 0x00;
@@ -143,5 +144,60 @@ class storage{
     checkHold()
     {
         return this.keyMap[KEY.SHIFT]||this.keyMap[KEY.C]
+    }
+
+    addScore(mode)
+    {
+        let last = this.b2b;
+        let mult = this.level+1
+        let calc = 0;
+        switch(mode)
+        {
+            case Score.SINGLE:
+                calc = 100;
+                this.b2b = false;
+                break;
+            case Score.DOUBLE:
+                calc = 300;
+                this.b2b = false;
+                break;
+            case Score.TRIPLE:
+                calc = 500;
+                this.b2b = false;
+                break;
+            case Score.TETRIS:
+                calc = 800;
+                this.b2b = true;
+                break;
+            case Score.MTS:
+                calc = 100;
+                break;
+            case Score.MTSS:
+                calc = 200;
+                this.b2b = true;
+                break;
+            case Score.TS:
+                calc = 400;
+                break;
+            case Score.TSS:
+                calc = 800;
+                this.b2b = true;
+                break;
+            case Score.TSD:
+                calc = 1200;
+                this.b2b = true;
+                break;
+            case Score.TST:
+                calc = 1600;
+                this.b2b = true;
+                break;
+        }
+        if(last&&this.b2b) calc = calc*1.5
+        calc = calc*mult;
+        this.score += calc;
+    }
+    addDropScore(n)
+    {
+        this.score+=n;
     }
 }
