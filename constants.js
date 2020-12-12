@@ -3,39 +3,39 @@ const ctx = canvas.getContext("2d");
 const scorebox = document.getElementById("score");
 const linebox = document.getElementById("lines");
 
-const h = 40;
-const w = 10;
+const BOARD_HEIGHT  = 40;
+const BOARD_WIDTH   = 10;
 
-const visibleH = 20;
+const VISIBLE_HEIGHT = 20;
 
-const blockSize = 20;
-const nextBlockSize = 10;
-const holdBlockSize = 15;
+const BLOCK_SIZE = 20;
+const NEXT_BLOCK_SIZE = 10;
+const HOLD_BLOCK_SIZE = 15;
 
-const blockSizeOutline = blockSize+2;
-const nextBlockSizeOutline = nextBlockSize+1;
-const holdBlockSizeOutline = holdBlockSize+1;
+const BLOCK_SIZE_OUTLINE = BLOCK_SIZE+2;
+const NEXT_BLOCK_SIZE_OUTLINE = NEXT_BLOCK_SIZE+1;
+const HOLD_BLOCK_SIZE_OUTLINE = HOLD_BLOCK_SIZE+1;
 
-const xOffset = 100;
-const yOffset = 20;
+const X_OFFSET = 120;
+const Y_OFFSET = 20;
 
-const nextXOffset = xOffset 
-                    + blockSizeOutline*w 
-                    + 20;
-const nextYOffset = yOffset;
-const distBtwNexts = 3*nextBlockSizeOutline;
+const NEXT_X_OFFSET = X_OFFSET 
+                    + BLOCK_SIZE_OUTLINE*BOARD_WIDTH
+                    + 30;
+const NEXT_Y_OFFSET = Y_OFFSET;
+const DIST_BTW_NEXTS = 3*NEXT_BLOCK_SIZE_OUTLINE;
 
-const holdXOffset = xOffset - 80;
-const holdYOffset = yOffset;
+const HOLD_X_OFFSET = X_OFFSET - 95;
+const HOLD_Y_OFFSET = Y_OFFSET;
 
-const playerOffset = 500;
+const PLAYER_OFFSET = 500;
 
 
 const DAS = 12;
 const ARR = 2;
-const entryDelay = 6;
+const ENTRY_DELAY = 6;
 
-const lineClearFrames = 20;
+const LINE_CLEAR_FRAMES = 20;
 
 const GRAVITY = [
     1.0,
@@ -91,7 +91,7 @@ const DRAWMODE = {
     HIDEGHOST: 3
 }
 
-const Score = {
+const SCORE = {
     SINGLE: 1,
     DOUBLE: 2,
     TRIPLE: 3,
@@ -105,7 +105,7 @@ const Score = {
 }
 
 
-const colorMap =  [
+const COLOR_MAP =  [
                     "rgb(000,240,000)",     //S
                     "rgb(240,000,000)",     //Z
                     "rgb(160,000,241)",     //T
@@ -115,23 +115,23 @@ const colorMap =  [
                     "rgb(240,240,000)"      //O
                 ];
 
-const p1 = [
+const P1_COLORS = [
                 "rgb(000,161,224)",
                 "rgb(004,107,148)"
             ];
 
-const p2 = [
+const P2_COLORS = [
                 "rgb(225,154,046)",
                 "rgb(181,112,038)"
             ];
 
-const black =     "rgb(000,000,000)";
-const guideline = "rgb(040,040,040)";
-const ghost =     "rgb(080,080,080)";
-const lineClearWhite = "rgba(255,255,255,0.15)";
-const lineClearBlack = "rgba(000,000,000,0.15)";
+const COLOR_BLACK =         "rgb(000,000,000)";
+const COLOR_GREY =                "rgb(040,040,040)";
+const COLOR_GHOST =               "rgb(080,080,080)";
+const LINE_CLEAR_WHITE =    "rgba(255,255,255,0.15)";
+const LINE_CLEAR_BLACK =    "rgba(000,000,000,0.15)";
 
-const pieceMap = [
+const PIECE_MAP = [
     [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
     [ 0xC600, 0x2640, 0x0C60, 0x4C80 ], // 'Z' 
     [ 0x4E00, 0x4640, 0x0E40, 0x4C40 ], // 'T' 
@@ -141,30 +141,32 @@ const pieceMap = [
     [ 0x6600, 0x6600, 0x6600, 0x6600 ]  // 'O'
 ];
 
-const moves = {
+const MOVES = {
     [KEY.LEFT]: p=>({...p,x:p.x-1}),
     [KEY.RIGHT]: p=>({...p,x:p.x+1}),
     [KEY.DOWN]: p=>({...p,y:p.y+1}),
 }
 
-const Offsets = [
+const OFFSETS = [
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0 -> 1
-    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 0
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 2
-    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 2 -> 1
     [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 2 -> 3
-    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 3 -> 2
     [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 3 -> 0
-    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 0 -> 3 
+
+    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1 -> 0
+    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 2 -> 1
+    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 3 -> 2
+    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]]  // 0 -> 3 
 ];
 
-const IOffsets = [
+const I_PIECE_OFFSETS = [
     [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 0 -> 1
-    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 1 -> 0
     [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 1 -> 2
-    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 2 -> 1
     [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 2 -> 3
-    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 3 -> 2
     [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 3 -> 0
-    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 0 -> 3
+
+    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 1 -> 0
+    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 2 -> 1
+    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 3 -> 2
+    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]]  // 0 -> 3
 ];

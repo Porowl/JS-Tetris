@@ -9,8 +9,8 @@ class Piece{
      * 초기 설정 함수입니다.
      */
     create(){
-        this.shape = pieceMap[this.typeId][this.rotation];
-        this.color = colorMap[this.typeId];
+        this.shape = PIECE_MAP[this.typeId][this.rotation];
+        this.color = COLOR_MAP[this.typeId];
         this.initialPos();
         this.hardDropped = false;
     }

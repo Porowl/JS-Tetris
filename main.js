@@ -28,12 +28,14 @@ repeated = held = false;
  */
 function init()
 {
+    resize();
     board = new Board(ctx, 1);
     UserStorage = new storage(); 
     piece = new Piece(UserStorage.getPiece());
     updatePiece(piece);
     updateNexts();
-
+    window.addEventListener('load', resize, false);
+    window.addEventListener('resize', resize, false);
     document.addEventListener('keydown',event=>
     {
         UserStorage.keyMap[event.keyCode] = true;
@@ -54,6 +56,25 @@ function init()
     requestId = requestAnimationFrame(animate);
 }
 
+function resize(){
+    var ratio = canvas.width/ canvas.height;
+    var ch = window.innerHeight;
+    var cw = ch*ratio;
+    if(cw>window.innerWidth)
+    {
+        cw = Math.floor(window.innerWidth);
+        ch = Math.floor(cw/ratio);
+    }
+    if(window.innerWidth>1024)
+    {
+        cw = 1024;
+        ch = 768;
+    }
+    canvas.style.width = cw;
+    canvas.style.height = ch;
+    scorebox.style.left = X_OFFSET * cw/1024;
+    scorebox.style.top = Y_OFFSET + BLOCK_SIZE_OUTLINE * 20 * ch/768;
+}
 /**
  * requestAnimtationFrame 호출 간 시간 계산 및 재호출 함수입니다.
  * 산출된 계산 dt (기준 1s) 를 update 함수로 보내 후에
@@ -183,7 +204,7 @@ function moveDown()
 {
     if(board.canMoveDown(piece))
     {
-        let p = moves[KEY.DOWN](piece);
+        let p = MOVES[KEY.DOWN](piece);
         updatePiece(p);
         return true;
     }
@@ -212,7 +233,7 @@ function moveLR()
                     ?(LRframeCount-DAS)%ARR==0
                     :false)
             {
-                p = moves[key](piece);
+                p = MOVES[key](piece);
             }
             LRframeCount++;
             break;
@@ -280,11 +301,12 @@ function rotateAc(a)
     do
     {
         p = {...piece, 
-                x: piece.x + (piece.typeId==5?IOffsets:Offsets)[piece.rotation*2+a][test][0],
-                y: piece.y - (piece.typeId==5?IOffsets:Offsets)[piece.rotation*2+a][test][1], 
+                x: piece.x + (piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*3][test][0],
+                y: piece.y - (piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*3][test][1], 
                 rotation: next,
-                shape: pieceMap[piece.typeId][next]
+                shape: PIECE_MAP[piece.typeId][next]
             };
+        console.log(test,piece.rotation,(piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*4][test][0])
         test++;
     } while(!board.valid(p)&&test<5)
 
@@ -344,7 +366,7 @@ function lock()
         lineClearDelay = 0;
         return;
     }
-    lineClearDelay = lineClearFrames;
+    lineClearDelay = LINE_CLEAR_FRAMES;
 }
 
 /**
@@ -369,7 +391,7 @@ function getNewPiece()
     updateNexts();
     if(UserStorage.hold)board.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
     repeated = false;
-    initDelay = entryDelay;
+    initDelay = ENTRY_DELAY;
     lineClearDelay = -1;
 }
 

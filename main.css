@@ -5,4 +5,15 @@ td{
 body{
     background:rgb(120,120,120);
     font-family: 'Press Start 2P', cursive;
+    font-size: 1.768vw;
+    color:white;
+}
+p{
+    margin:0;
+    padding:0;
+}
+canvas{
+    position:absolute;
+    top:0;
+    left:0;
 }
