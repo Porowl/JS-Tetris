@@ -40,7 +40,7 @@ class Piece{
      * 초기 블럭 설정 값입니다.
      */
     initialPos(){
-        this.y=-1;
-        this.x = 3;
+        this.y  =   -1;
+        this.x  =    3;
     }
 }

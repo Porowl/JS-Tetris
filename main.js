@@ -1,4 +1,5 @@
 var board;
+var boardView
 var UserStorage;
 var piece;
 var LineArr;
@@ -17,6 +18,10 @@ var ghostSwitch = true;
 var requestId;
 var lastTSpinTest = 0;
 
+
+var farmeCount = 0;
+
+
 var repeated, held;
 repeated = held = false;
 
@@ -29,7 +34,8 @@ repeated = held = false;
 function init()
 {
     resize();
-    board = new Board(ctx, 1);
+    board = new Board(1);
+    boardView = new BoardView(ctx, board)
     UserStorage = new storage(); 
     piece = new Piece(UserStorage.getPiece());
     updatePiece(piece);
@@ -104,14 +110,14 @@ function update(dt){
     {
         lineClearDelay--;
         for(var i = 0; i<LineArr.lines.length;i++)
-            board.clearAnimation(LineArr.lines[i], lineClearDelay);
+            boardView.clearAnimation(LineArr.lines[i], lineClearDelay);
         return;
     }
     else if(lineClearDelay==0)
     {
         for(var i = 0; i<LineArr.lines.length;i++)
             board.clearLine(LineArr.lines[i]);
-        board.draw();
+        boardView.draw();
 
         UserStorage.clearedLines += LineArr.lines.length;
         updateClearedLines();
@@ -122,7 +128,7 @@ function update(dt){
     }
 
     if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
-    {
+    {   
         lock(); 
     }
 
@@ -204,6 +210,7 @@ function moveDown()
 {
     if(board.canMoveDown(piece))
     {
+
         let p = MOVES[KEY.DOWN](piece);
         updatePiece(p);
         return true;
@@ -306,7 +313,6 @@ function rotateAc(a)
                 rotation: next,
                 shape: PIECE_MAP[piece.typeId][next]
             };
-        console.log(test,piece.rotation,(piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*4][test][0])
         test++;
     } while(!board.valid(p)&&test<5)
 
@@ -332,9 +338,9 @@ function hold()
         {
             held = true;
             UserStorage.hold = piece.typeId;
-            board.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
-            board.drawPiece(piece, DRAWMODE.HIDEPIECE);
-            board.drawPiece(piece, DRAWMODE.HIDEGHOST);
+            boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
+            boardView.drawPiece(piece, DRAWMODE.HIDEPIECE);
+            boardView.drawPiece(piece, DRAWMODE.HIDEGHOST);
             getNewPiece();
         }
         else
@@ -344,7 +350,7 @@ function hold()
             var p = new Piece(temp)
             updatePiece(p);
             piece = p;
-            board.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
+            boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
         }
         repeated = true;
     }
@@ -389,7 +395,7 @@ function getNewPiece()
     piece = new Piece(UserStorage.getPiece());
     updatePiece(piece);
     updateNexts();
-    if(UserStorage.hold)board.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
+    if(UserStorage.hold)boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
     repeated = false;
     initDelay = ENTRY_DELAY;
     lineClearDelay = -1;
@@ -408,13 +414,13 @@ function timeStamp()
  */
 function updatePiece(p)
 {
-    if(ghostSwitch) board.drawPiece(piece, DRAWMODE.HIDEGHOST);
-    board.drawPiece(piece, DRAWMODE.HIDEPIECE);
-
+    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.HIDEGHOST);
+    boardView.drawPiece(piece, DRAWMODE.HIDEPIECE);
+    
     piece.move(p);
 
-    if(ghostSwitch) board.drawPiece(piece, DRAWMODE.DRAWGHOST);
-    board.drawPiece(piece, DRAWMODE.DRAWPIECE);
+    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.DRAWGHOST);
+    boardView.drawPiece(piece, DRAWMODE.DRAWPIECE);
 }
 
 /**
@@ -422,10 +428,10 @@ function updatePiece(p)
  */
 function updateNexts()
 {
-    board.refreshNexts();
+boardView.refreshNexts();
     for(var i = 0; i<Math.max(UserStorage.nexts,6); i++)
     {
-        board.drawNext(UserStorage.getNext(i+1),i)
+        boardView.drawNext(UserStorage.getNext(i+1),i)
     }
 }
 
