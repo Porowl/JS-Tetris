@@ -1,10 +1,8 @@
 class BoardView{
-    constructor(ctx, board){
+    constructor(ctx){
         this.ctx = ctx;
-        this.board = board;
-        this.offset = (board.player==1)?0:playerOffset; 
+        this.offset = 0; 
         this.initGraphics();
-        this.draw();
     }
 
     /**
@@ -72,15 +70,15 @@ class BoardView{
     /**
      * 필드를 그립니다.
      */
-    draw(){
+    draw(table){
         this.ctx.fillStyle = COLOR_GREY;
         this.ctx.fillRect(X_OFFSET + this.offset,Y_OFFSET,BOARD_WIDTH*BLOCK_SIZE_OUTLINE,VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE);
 
-        for(var i = 0;i<VISIBLE_HEIGHT;i++){
-            for(var j = 0; j<BOARD_WIDTH; j++){
-                var x = X_OFFSET + j * BLOCK_SIZE_OUTLINE + 1 + this.offset;
-                var y = Y_OFFSET + i * BLOCK_SIZE_OUTLINE + 1;
-                let color = this.board.field[i+20][j] - 1;
+        for(let i = 0;i<VISIBLE_HEIGHT;i++){
+            for(let j = 0; j<BOARD_WIDTH; j++){
+                let x = X_OFFSET + j * BLOCK_SIZE_OUTLINE + 1 + this.offset;
+                let y = Y_OFFSET + i * BLOCK_SIZE_OUTLINE + 1;
+                let color = table[i+20][j] - 1;
                 this.ctx.fillStyle = color<0?COLOR_BLACK:COLOR_MAP[color];
                 this.ctx.fillRect(x,y,BLOCK_SIZE,BLOCK_SIZE);
             }
@@ -96,33 +94,17 @@ class BoardView{
      * @param {Piece} piece 
      * @param {Number} MODE 
      */
-    drawPiece(piece, MODE){
-        let COLOR_GHOSTToggled = false;
+    drawPiece(piece, MODE, index = 0){
         switch(MODE)
         {
             case DRAWMODE.DRAWPIECE:
+            case DRAWMODE.DRAWGHOST:
                 this.ctx.fillStyle = piece.color;
                 break;
-            case DRAWMODE.HIDEPIECE:
-                this.ctx.fillStyle = COLOR_BLACK; 
-                break;
-            case DRAWMODE.DRAWGHOST:
-                this.ctx.fillStyle = COLOR_GHOST;
-                COLOR_GHOSTToggled = true;
-                break;
             case DRAWMODE.HIDEGHOST:
+            case DRAWMODE.HIDEPIECE:
                 this.ctx.fillStyle = COLOR_BLACK;
-                COLOR_GHOSTToggled = true;
                 break;
-        }
-        if(COLOR_GHOSTToggled)
-        {
-            let p = {...piece};
-            while(this.board.canMoveDown(p))
-            {
-                p.y++;
-            }
-            piece = p;
         }
         for(var i = 0;i<4;i++)
         {
@@ -132,7 +114,7 @@ class BoardView{
                 {
                     if(piece.y+i>=0){
                         var x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
-                        var y = Y_OFFSET+(piece.y+i)*BLOCK_SIZE_OUTLINE + 1;
+                        var y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
                         var w = BLOCK_SIZE; 
                         var h = BLOCK_SIZE;
                         this.ctx.fillRect(x,y,w,h);}
@@ -167,6 +149,7 @@ class BoardView{
      */
     drawHold(typeId, mode)
     {
+        if(!typeId) return;
         let color;
         switch(mode)
         {

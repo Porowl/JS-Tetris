@@ -1,5 +1,5 @@
 var board;
-var boardView
+var boardView;
 var UserStorage;
 var piece;
 var LineArr;
@@ -34,12 +34,6 @@ repeated = held = false;
 function init()
 {
     resize();
-    board = new Board(1);
-    boardView = new BoardView(ctx, board)
-    UserStorage = new storage(); 
-    piece = new Piece(UserStorage.getPiece());
-    updatePiece(piece);
-    updateNexts();
     window.addEventListener('load', resize, false);
     window.addEventListener('resize', resize, false);
     document.addEventListener('keydown',event=>
@@ -54,6 +48,14 @@ function init()
         else if(event.KeyCode == KEY.C) return;
         UserStorage.keyMap[event.keyCode] = false;
     });
+
+    board = new Board(1);
+    boardView = new BoardView(ctx);
+    boardView.draw(board.field);
+    UserStorage = new storage(); 
+    piece = new Piece(UserStorage.newPiece());
+    updatePiece(piece);
+    updateNexts();
 
     now = last = timeStamp();
 
@@ -117,7 +119,7 @@ function update(dt){
     {
         for(var i = 0; i<LineArr.lines.length;i++)
             board.clearLine(LineArr.lines[i]);
-        boardView.draw();
+        boardView.draw(board.field);
 
         UserStorage.clearedLines += LineArr.lines.length;
         updateClearedLines();
@@ -392,10 +394,10 @@ function checkTopOut()
  */
 function getNewPiece()
 {
-    piece = new Piece(UserStorage.getPiece());
+    piece = new Piece(UserStorage.newPiece());
     updatePiece(piece);
     updateNexts();
-    if(UserStorage.hold)boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
+    boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
     repeated = false;
     initDelay = ENTRY_DELAY;
     lineClearDelay = -1;
@@ -429,9 +431,10 @@ function updatePiece(p)
 function updateNexts()
 {
 boardView.refreshNexts();
+    let arr = UserStorage.nextPieces()
     for(var i = 0; i<Math.max(UserStorage.nexts,6); i++)
     {
-        boardView.drawNext(UserStorage.getNext(i+1),i)
+        boardView.drawNext(arr[i],i)
     }
 }
 

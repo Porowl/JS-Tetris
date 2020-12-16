@@ -38,7 +38,7 @@ class storage{
     /**
      * 현재 블럭을 가져옵니다.
      */
-    getPiece(){
+    newPiece(){
         this.index++;
         if(this.pieces.length<this.index+7) this.addPiece();
         return this.pieces[this.index];
@@ -48,8 +48,8 @@ class storage{
      * 다음 n 번째 블럭을 가져옵니다.
      * @param {int} n 
      */
-    getNext(n){
-        return this.pieces[this.index+n];
+    nextPieces(){
+        return this.pieces.slice(this.index+1,this.index+8);
     }
     
     /**
@@ -196,6 +196,7 @@ class storage{
         calc = calc*mult;
         this.score += calc;
     }
+
     addDropScore(n)
     {
         this.score+=n;

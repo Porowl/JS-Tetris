@@ -7,13 +7,19 @@ body{
     font-family: 'Press Start 2P', cursive;
     font-size: 1.768vw;
     color:white;
-}
-p{
     margin:0;
     padding:0;
 }
 canvas{
+    z-index:0;
     position:absolute;
     top:0;
     left:0;
+}
+#main{
+    position:absolute;
+    background-color:black;
+    z-index:1;
+    width:1078;
+    height:768;
 }

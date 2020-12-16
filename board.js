@@ -139,7 +139,6 @@ class Board{
         return true;
     }
 
-
     /**
      * 해당 블럭이 아래로 한 칸 내려갈 수 있는지 검사합니다.
      * @param {Piece} p 
