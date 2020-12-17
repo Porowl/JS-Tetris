@@ -22,8 +22,8 @@ var lastTSpinTest = 0;
 var farmeCount = 0;
 
 
-var repeated, held;
-repeated = held = false;
+var repeated, held, gameStarted;
+gameStarted = repeated = held = false;
 
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
@@ -38,21 +38,35 @@ function init()
     window.addEventListener('resize', resize, false);
     document.addEventListener('keydown',event=>
     {
+        if(!gameStarted) return;
         UserStorage.keyMap[event.keyCode] = true;
     });
 
     document.addEventListener('keyup',event=>
     {
+        if(!gameStarted) return;
         if(event.keyCode == KEY.SPACE) return;
         else if(event.KeyCode == KEY.SHIFT) return;
         else if(event.KeyCode == KEY.C) return;
         UserStorage.keyMap[event.keyCode] = false;
     });
 
-    board = new Board(1);
-    boardView = new BoardView(ctx);
+    board = new Board(0);
+    boardView = new BoardView(ctx, ctx2, 0);
     boardView.draw(board.field);
+}
+var countDown = () => {
     UserStorage = new storage(); 
+    updateScore()
+    document.getElementById("main").hidden = true;
+    setTimeout(()=>{boardView.countDown(3)},0);
+    setTimeout(()=>{boardView.countDown(2)},1000);
+    setTimeout(()=>{boardView.countDown(1)},2000);
+    setTimeout(()=>{boardView.countDown(0)},3000);
+    setTimeout(gameStart,3000);
+}
+function gameStart(){
+    gameStarted = true;
     piece = new Piece(UserStorage.newPiece());
     updatePiece(piece);
     updateNexts();
@@ -63,7 +77,6 @@ function init()
 
     requestId = requestAnimationFrame(animate);
 }
-
 function resize(){
     var ratio = canvas.width/ canvas.height;
     var ch = window.innerHeight;
@@ -80,8 +93,8 @@ function resize(){
     }
     canvas.style.width = cw;
     canvas.style.height = ch;
-    scorebox.style.left = X_OFFSET * cw/1024;
-    scorebox.style.top = Y_OFFSET + BLOCK_SIZE_OUTLINE * 20 * ch/768;
+    canvas2.style.width = cw;
+    canvas2.style.height = ch;
 }
 /**
  * requestAnimtationFrame 호출 간 시간 계산 및 재호출 함수입니다.
@@ -104,10 +117,6 @@ function animate()
  * @param {number} dt 시간차
  */
 function update(dt){
-    initDelay--;
-
-    inputCycle();
-
     if(lineClearDelay>0)
     {
         lineClearDelay--;
@@ -123,11 +132,15 @@ function update(dt){
 
         UserStorage.clearedLines += LineArr.lines.length;
         updateClearedLines();
+        calcScore();
         updateScore();
 
         getNewPiece();
         checkTopOut();
     }
+
+    initDelay--;
+    inputCycle();
 
     if((piece.hardDropped||lockDelay>0.5)&&!board.canMoveDown(piece))
     {   
@@ -443,7 +456,7 @@ boardView.refreshNexts();
  */
 function updateClearedLines()
 {
-    linebox.innerText = UserStorage.clearedLines;
+    //lineArr.innerText = UserStorage.clearedLines;
 }
 function calcScore()
 {
@@ -456,34 +469,41 @@ function calcScore()
     {
         case 0:
             if(tspin)
-                result = mini?Score.MTS:Score.TS;
+                result = mini?SCORE.MTS:SCORE.TS;
             break;
         case 1:
             if(tspin)
-                result = mini?Score.MTSS:Score.TSS;
+                result = mini?SCORE.MTSS:SCORE.TSS;
             else 
-                result = Score.SINGLE;
+                result = SCORE.SINGLE;
             break;
         case 2:
             if(tspin)
-                result = Score.TSD;
+                result = SCORE.TSD;
             else
-                result = Score.DOUBLE;
+                result = SCORE.DOUBLE;
             break;
         case 3:
             if(tspin)
-                result = Score.TST;
+                result = SCORE.TST;
             else
-                result = Score.TRIPLE;
+                result = SCORE.TRIPLE;
             break;
         case 4:
-            result = Score.TETRIS
+            result = SCORE.TETRIS
     }
-    if(result) UserStorage.addScore(result);
-    updateScore()
+    if(result)
+    {
+        UserStorage.addScore(result);
+        if(board.getRemaining()==0)
+        {
+            UserStorage.addScore(SCORE.PERFECT);
+        }
+        updateScore()
+    }
 }
 
 function updateScore()
 {
-    scorebox.innerText = UserStorage.score;
+    boardView.updateScore(UserStorage.scoreToText());
 }

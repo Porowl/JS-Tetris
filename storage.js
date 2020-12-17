@@ -153,44 +153,47 @@ class storage{
         let calc = 0;
         switch(mode)
         {
-            case Score.SINGLE:
+            case SCORE.SINGLE:
                 calc = 100;
                 this.b2b = false;
                 break;
-            case Score.DOUBLE:
+            case SCORE.DOUBLE:
                 calc = 300;
                 this.b2b = false;
                 break;
-            case Score.TRIPLE:
+            case SCORE.TRIPLE:
                 calc = 500;
                 this.b2b = false;
                 break;
-            case Score.TETRIS:
+            case SCORE.TETRIS:
                 calc = 800;
                 this.b2b = true;
                 break;
-            case Score.MTS:
+            case SCORE.MTS:
                 calc = 100;
                 break;
-            case Score.MTSS:
+            case SCORE.MTSS:
                 calc = 200;
                 this.b2b = true;
                 break;
-            case Score.TS:
+            case SCORE.TS:
                 calc = 400;
                 break;
-            case Score.TSS:
+            case SCORE.TSS:
                 calc = 800;
                 this.b2b = true;
                 break;
-            case Score.TSD:
+            case SCORE.TSD:
                 calc = 1200;
                 this.b2b = true;
                 break;
-            case Score.TST:
+            case SCORE.TST:
                 calc = 1600;
                 this.b2b = true;
                 break;
+            case SCORE.PERFECT:
+                this.score += 30000;
+                return;
         }
         if(last&&this.b2b) calc = calc*1.5
         calc = calc*mult;
@@ -200,5 +203,14 @@ class storage{
     addDropScore(n)
     {
         this.score+=n;
+    }
+    scoreToText()
+    {
+        let temp = ""+ this.score;
+        while(temp.length<7)
+        {
+            temp = "0" + temp;
+        }
+        return temp;
     }
 }

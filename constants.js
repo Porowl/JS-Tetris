@@ -1,7 +1,7 @@
 const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
-const scorebox = document.getElementById("score");
-const linebox = document.getElementById("lines");
+const canvas2 = document.getElementById("infos");
+const ctx2 = canvas2.getContext("2d");
 
 const BOARD_HEIGHT  = 40;
 const BOARD_WIDTH   = 10;
@@ -18,6 +18,10 @@ const HOLD_BLOCK_SIZE_OUTLINE = HOLD_BLOCK_SIZE+1;
 
 const X_OFFSET = 120;
 const Y_OFFSET = 20;
+
+const BOARD_CENTER_X = X_OFFSET + BLOCK_SIZE_OUTLINE*5;
+const BOARD_CENTER_Y = Y_OFFSET + BLOCK_SIZE_OUTLINE*10;
+const BOARD_END_Y = Y_OFFSET + BLOCK_SIZE_OUTLINE*20;
 
 const NEXT_X_OFFSET = X_OFFSET 
                     + BLOCK_SIZE_OUTLINE*BOARD_WIDTH
@@ -102,6 +106,7 @@ const SCORE = {
     TSS: 8,
     TSD: 9,
     TST: 10,
+    PERFECT: 11
 }
 
 
@@ -126,8 +131,9 @@ const P2_COLORS = [
             ];
 
 const COLOR_BLACK =         "rgb(000,000,000)";
-const COLOR_GREY =                "rgb(040,040,040)";
-const COLOR_GHOST =               "rgb(080,080,080)";
+const COLOR_GREY =          "rgb(040,040,040)";
+const COLOR_WHITE =         "rgb(255,255,255)";
+const COLOR_GHOST =         "rgb(080,080,080)";
 const LINE_CLEAR_WHITE =    "rgba(255,255,255,0.15)";
 const LINE_CLEAR_BLACK =    "rgba(000,000,000,0.15)";
 

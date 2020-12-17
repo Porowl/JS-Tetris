@@ -2,6 +2,7 @@ class Board{
     constructor(player){
         this.field = this.initBoard();
         this.player = player;
+        this.remaining = 0;
     }
 
     /**
@@ -71,6 +72,7 @@ class Board{
         {
             if(this.checkLine(i)) counter.add(i);
         }
+        this.remaining += 4;
         return counter;
     }
 
@@ -106,6 +108,7 @@ class Board{
                 this.field[y][x] = this.field[y-1][x];
             }
         }
+        this.remaining -= 10;
     }
 
     /**
@@ -117,7 +120,7 @@ class Board{
     isNotBlocked(x,y){
         y = y+20;
         if(x<0||x>BOARD_WIDTH-1) return false;
-        if(y>BOARD_HEIGHT-1) return false;
+        if(y>BOARD_HEIGHT-1) return false
         return this.field[y][x]==0;
     }
 
@@ -146,5 +149,10 @@ class Board{
      */
     canMoveDown(p){
         return this.valid({...p,y:p.y+1})
+    }
+
+    getRemaining(){
+        console.log(this.remaining);
+        return this.remaining;
     }
 }

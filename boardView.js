@@ -1,7 +1,9 @@
 class BoardView{
-    constructor(ctx){
+    constructor(ctx, ctx2, player){
         this.ctx = ctx;
-        this.offset = 0; 
+        this.ctx2 = ctx2
+        this.player = player;
+        this.offset = (player==0)?0:PLAYER_OFFSET*1; 
         this.initGraphics();
     }
 
@@ -10,11 +12,8 @@ class BoardView{
      */
     initGraphics()
     {
-        scorebox.style.position = "absolute";
-        scorebox.style.top = Y_OFFSET+BLOCK_SIZE_OUTLINE*20.3;
-        scorebox.style.left = X_OFFSET;
-
-        ctx.font = "16px 'Press Start 2P'";
+        let ctx = this.ctx;
+        ctx.font = "16px 'PressStart2P'";
         ctx.textBaseline = 'top';
         ctx.fillText('HOLD', HOLD_X_OFFSET + this.offset, HOLD_Y_OFFSET);
         ctx.fillText('NEXT', NEXT_X_OFFSET + this.offset, NEXT_Y_OFFSET)
@@ -45,7 +44,7 @@ class BoardView{
 
     callDrawOutline(L,U,R,D)
     {
-        let color = (this.player==1?P1_COLORS:P2_COLORS)
+        let color = (this.player==0?P1_COLORS:P2_COLORS)
         this.drawOutline(L+ this.offset,U,R+ this.offset,D,5, 7, color[1]);
         this.drawOutline(L+ this.offset,U,R+ this.offset,D,2, 4, color[0]);
         this.drawOutline(L+ this.offset,U,R+ this.offset,D,10, 5, color[0]);
@@ -211,5 +210,43 @@ class BoardView{
                         NEXT_BLOCK_SIZE_OUTLINE*6,
                         DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE
                         );
+    }
+
+    countDown(i)
+    {
+        let ctx = this.ctx2;
+        ctx.font = "100px 'PressStart2P'";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        switch(i)
+        {
+            case 1:
+                ctx.fillStyle = COLOR_MAP[1];
+                break;
+            case 2:
+                ctx.fillStyle = COLOR_MAP[6];
+                break;
+            case 3:
+                ctx.fillStyle = COLOR_MAP[0];
+                break;
+        }
+        ctx.clearRect(BOARD_CENTER_X+this.offset-200,BOARD_CENTER_Y-200,400,400);
+        if(i==0) return;
+        ctx.fillText(i,BOARD_CENTER_X+this.offset,BOARD_CENTER_Y,BLOCK_SIZE_OUTLINE*10);
+    }
+
+    updateScore(score)
+    {
+        let ctx = this.ctx2;
+        ctx.clearRect(X_OFFSET+this.offset-5,BOARD_END_Y-5,BLOCK_SIZE_OUTLINE*20+5,35);
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center"
+        ctx.font = "24px 'PressStart2P'"; 
+        ctx.strokeStyle = COLOR_GREY;
+        ctx.lineWidth = 5;
+        ctx.fillStyle = COLOR_WHITE;
+        
+        ctx.strokeText(score,BOARD_CENTER_X+this.offset,BOARD_END_Y+12);
+        ctx.fillText(score,BOARD_CENTER_X+this.offset,BOARD_END_Y+12);
     }
 }
