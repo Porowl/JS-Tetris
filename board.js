@@ -10,10 +10,10 @@ class Board{
      * 색을 담기 위해 이차 배열로 구현하였습니다.
      * @return 빈 2차 배열
      */
-    initBoard(){
-        var array = Array();
+    initBoard = () =>{
+        var array = [];
         for(var i = 0;i<BOARD_HEIGHT;i++){
-            array.push(Array());
+            array.push([]);
             for(var j = 0;j<BOARD_WIDTH;j++){
                 array[i].push(0);
             }
@@ -26,53 +26,38 @@ class Board{
      * @param {Piece} p 
      * @return {Number[]} 채워진 행들의 배열
      */
-    lock({shape: SHAPE, typeId: TYPE, x:PX, y:PY}){
+    lock = p =>{
         for(var i = 0;i<4;i++){
             for(var j = 0; j<4;j++){
-                if(SHAPE & (0x8000 >> (i*4+j)))
+                if(p.shape & (0x8000 >> (i*4+j)))
                 {
-                    var tx = PX + j;
-                    var ty = PY + i + 20;
-                    this.field[ty][tx] = TYPE+1;    
+                    var tx = p.x + j;
+                    var ty = p.y + i + 20;
+                    this.field[ty][tx] = p.typeId+1;    
                 }
             }
         }
-
-        var tSpinCounter = 0;
-        var tSpinMini = false;
         
-        if(TYPE==2)
-        {
-            tSpinCounter = 0;
-            let x = PX;
-            let y = PY;
-            if(!this.isNotBlocked(x,y)) tSpinCounter++;
-            if(!this.isNotBlocked(x+2,y)) tSpinCounter++;
-            if(!this.isNotBlocked(x,y+2)) {
-                tSpinCounter++;
-                tSpinMini = true;
-            }
-            if(!this.isNotBlocked(x+2,y+2)){
-                tSpinCounter++;
-                tSpinMini = true;
-            };
-        }
-
         const counter = {
-            lines: Array(), 
+            lines: [], 
             add(i){
                 this.lines.push(i);
             },
+            tSpin: T_SPIN_STATE.NONE
         }
-        counter.tSpinMini = tSpinMini;
-        counter.tspinCounter = tSpinCounter;
-
-        var max = Math.min(PY+24,BOARD_HEIGHT)
-        for(var i = PY+20; i<max; i++)
+        
+        var max = Math.min(p.y+24,BOARD_HEIGHT)
+        for(var i = p.y+20; i<max; i++)
         {
             if(this.checkLine(i)) counter.add(i);
         }
         this.remaining += 4;
+
+        if(p.typeId===2 && p.lastMove === LAST_MOVE.SPIN)
+        {
+            counter.tSpin = this.checkTSpin(p.x, p.y, p.rotation,p.rotTest)
+        }
+
         return counter;
     }
 
@@ -81,12 +66,12 @@ class Board{
      * @param {Number} y 번째 행
      * @return {boolean} 검사 값
      */
-    checkLine(y)
+    checkLine = y =>
     {
         let filled = true;
         for(var x = 0; x<BOARD_WIDTH;x++)
         {
-            if(this.field[y][x]==0)
+            if(this.field[y][x]===0)
             {
                 filled = false;
                 continue;
@@ -99,7 +84,7 @@ class Board{
      * 해당 행을 지우고 위 블럭들을 한 칸 아래로 내립니다.
      * @param {Number} i 번째 행 
      */
-    clearLine(i)
+    clearLine = i =>
     {
         for(var y = i;y>0;y--)
         {
@@ -117,25 +102,31 @@ class Board{
      * @param {Number} y y번째 열
      * @return {boolean} 검사 값
      */
-    isNotBlocked(x,y){
+    isNotBlocked = (x,y) =>
+    {
         y = y+20;
         if(x<0||x>BOARD_WIDTH-1) return false;
         if(y>BOARD_HEIGHT-1) return false
-        return this.field[y][x]==0;
+        return this.field[y][x]===0;
     }
 
     /**
      * 해당 블럭이 필드 내에 존재할 수 있는지 여부를 확인합니다.
      * @param {Object} p - 확인할 블럭
      */
-    valid(p){
+    valid = p =>
+    {
         for(var i = 0;i<4;i++){
             for(var j = 0; j<4;j++){
                 if(p.shape & (0x8000 >> (i*4+j)))
                 {
                     var x = p.x + j;
                     var y = p.y + i;     
-                    if(!this.isNotBlocked(x,y)) return false;
+                    if(!this.isNotBlocked(x,y))
+                    {
+                        console.log(`blocked at ${x},${y}`);
+                        return false;
+                    }
                 }
             }
         }
@@ -147,12 +138,72 @@ class Board{
      * @param {Piece} p 
      * @return {boolean} 검사 값
      */
-    canMoveDown(p){
+    canMoveDown = p =>
+    {
         return this.valid({...p,y:p.y+1})
     }
 
-    getRemaining(){
-        console.log(this.remaining);
+    getRemaining = () =>
+    {
         return this.remaining;
+    }
+
+    getGhostIndex = p =>
+    {
+
+        var temp = 0;
+        while(this.canMoveDown(p))
+        {
+            p = {...p,y:p.y+1};
+            temp++;
+        }
+        return temp;
+    }
+    
+    checkTSpin = (x,y,r,l) =>
+    {
+        let corners = 0b0000;
+        let tSpinCounter = 0;
+        let tSpinMini = false;
+        if(!this.isNotBlocked(x  ,y  )){        //LU
+            corners = corners & 0b1000;
+            tSpinCounter++;
+        } 
+        if(!this.isNotBlocked(x+2,y  ))       //RU
+        {
+            corners = corners & 0b0100;
+            tSpinCounter++;
+        }
+        if(!this.isNotBlocked(x  ,y+2)) {     //LD
+            corners = corners & 0b0010
+            tSpinCounter++;
+        }
+        if(!this.isNotBlocked(x+2,y+2)){    //RD
+            corners = corners & 0b0001
+            tSpinCounter++;
+        };
+
+        if(tSpinCounter>2)
+        {
+            switch(r)
+            {
+                case 0:
+                    tSpinMini = !(corners & 0b1100);
+                    break;
+                case 1:
+                    tSpinMini = !(corners & 0b0101);
+                    break;
+                case 2:
+                    tSpinMini = !(corners & 0b0011);
+                    break;
+                case 3:
+                    tSpinMini = !(corners & 0b1010);
+                    break;
+            }
+        }
+        else return T_SPIN_STATE.NONE
+
+        if(tSpinMini&&l<4) return T_SPIN_STATE.MINI;
+        return T_SPIN_STATE.PROP
     }
 }

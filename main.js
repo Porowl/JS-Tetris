@@ -31,7 +31,7 @@ gameStarted = repeated = held = false;
  * requestAnimationFrame 함수 호출을 위한 타임스탬프 기준을 찍은 후
  * 해당 함수를 불러옵니다.
  */
-function init()
+const init = () =>
 {
     resize();
     window.addEventListener('load', resize, false);
@@ -55,7 +55,7 @@ function init()
     boardView = new BoardView(ctx, ctx2, 0);
     boardView.draw(board.field);
 }
-var countDown = () => {
+const countDown = () => {
     UserStorage = new storage(); 
     updateScore()
     document.getElementById("main").hidden = true;
@@ -65,7 +65,7 @@ var countDown = () => {
     setTimeout(()=>{boardView.countDown(0)},3000);
     setTimeout(gameStart,3000);
 }
-function gameStart(){
+const gameStart = () => {
     gameStarted = true;
     piece = new Piece(UserStorage.newPiece());
     updatePiece(piece);
@@ -77,7 +77,7 @@ function gameStart(){
 
     requestId = requestAnimationFrame(animate);
 }
-function resize(){
+const resize = () =>{
     var ratio = canvas.width/ canvas.height;
     var ch = window.innerHeight;
     var cw = ch*ratio;
@@ -101,7 +101,7 @@ function resize(){
  * 산출된 계산 dt (기준 1s) 를 update 함수로 보내 후에
  * 계산될 게임 진행이 될 수 있도록 합니다.
  */
-function animate()
+const animate = () =>
 {
     now = timeStamp();
     var dt = (now-last)/1000.0;
@@ -116,7 +116,7 @@ function animate()
  * dt는 자동으로 계산되어 animate 함수로부터 넘어옵니다.
  * @param {number} dt 시간차
  */
-function update(dt){
+const update = dt =>{
     if(lineClearDelay>0)
     {
         lineClearDelay--;
@@ -167,7 +167,7 @@ function update(dt){
 /**
  * 각 프레임마다 유저의 키 입력을 읽습니다.
  */
-function inputCycle()
+const inputCycle = () =>
 {
     moveLR();
     rotate();
@@ -178,7 +178,7 @@ function inputCycle()
 /**
  * 하드 드롭을 실행합니다.
  */
-function hardDrop()
+const hardDrop = () =>
 {
     if(UserStorage.keyMap[KEY.SPACE])
     {
@@ -201,7 +201,7 @@ function hardDrop()
 /**
  * 자동으로 블럭이 내려가는 논리 함수입니다.
  */
-function moveDownCycle(dt)
+const moveDownCycle = dt =>
 {
     if(UserStorage.keyMap[KEY.DOWN]&&gravity>2/60)
     {
@@ -221,7 +221,7 @@ function moveDownCycle(dt)
 /**
  * 블럭을 내리는 함수입니다.
  */
-function moveDown()
+const moveDown = () =>
 {
     if(board.canMoveDown(piece))
     {
@@ -236,7 +236,7 @@ function moveDown()
 /**
  * 블럭을 양 옆으로 움직이는 논리 함수입니다.
  */
-function moveLR()
+const moveLR = () =>
 {
     let p;
     let key;
@@ -273,7 +273,7 @@ function moveLR()
 /**
  * 블럭을 회전시키는 논리 함수입니다.
  */
-function rotate()
+const rotate = () =>
 {
     let state = UserStorage.checkRot();
     if(state == KEYSTATES.UZ)
@@ -314,7 +314,7 @@ function rotate()
  * 블럭을 회전하는 함수입니다.
  * @param {number} a 0 은 시계방향, 1은 반시계방향을 의미합니다.
  */
-function rotateAc(a)
+const rotateAc = a =>
 {
     let p;
     let test = 0;
@@ -323,10 +323,12 @@ function rotateAc(a)
     do
     {
         p = {...piece, 
-                x: piece.x + (piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*3][test][0],
-                y: piece.y - (piece.typeId==5?I_PIECE_OFFSETS:OFFSETS)[piece.rotation+a*3][test][1], 
+                x: piece.x + (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation*2+a][test][0],
+                y: piece.y - (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation*2+a][test][1], 
                 rotation: next,
-                shape: PIECE_MAP[piece.typeId][next]
+                shape: PIECE_MAP[piece.typeId][next],
+                lastMove: LAST_MOVE.SPIN,
+                rotTest: test
             };
         test++;
     } while(!board.valid(p)&&test<5)
@@ -344,7 +346,7 @@ function rotateAc(a)
 /**
  * 블럭을 '저장'하는 함수입니다.
  */
-function hold()
+const hold = () =>
 {
     if(!UserStorage.checkHold()) return;
     if(!repeated)
@@ -355,7 +357,7 @@ function hold()
             UserStorage.hold = piece.typeId;
             boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
             boardView.drawPiece(piece, DRAWMODE.HIDEPIECE);
-            boardView.drawPiece(piece, DRAWMODE.HIDEGHOST);
+            boardView.drawPiece(piece, DRAWMODE.HIDEGHOST, board.getGhostIndex(piece));
             getNewPiece();
         }
         else
@@ -378,7 +380,7 @@ function hold()
 /**
  * 블럭을 필드에 고정시키는 함수입니다.
  */
-function lock()
+const lock = () => 
 {
     lockDelay = 0;
     dropRate = 0;
@@ -393,7 +395,7 @@ function lock()
 /**
  * 게임 오버를 확정짓는 함수입니다.
  */
-function checkTopOut()
+const checkTopOut = () =>
 {
     if(!board.valid(piece))
     {
@@ -405,7 +407,7 @@ function checkTopOut()
 /**
  * 새로운 블럭을 가져오는 함수입니다.
  */
-function getNewPiece()
+const getNewPiece = () =>
 {
     piece = new Piece(UserStorage.newPiece());
     updatePiece(piece);
@@ -416,7 +418,7 @@ function getNewPiece()
     lineClearDelay = -1;
 }
 
-function timeStamp()
+const timeStamp = () =>
 {
     return new Date().getTime();
 }
@@ -427,21 +429,21 @@ function timeStamp()
  * 블럭 이동을 그래픽적으로 표시합니다.
  * @param {Piece} p 이동 목표인 블럭 p 입니다.
  */
-function updatePiece(p)
+const updatePiece = p =>
 {
-    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.HIDEGHOST);
+    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.HIDEGHOST, board.getGhostIndex(piece));
     boardView.drawPiece(piece, DRAWMODE.HIDEPIECE);
     
     piece.move(p);
 
-    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.DRAWGHOST);
+    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.DRAWGHOST, board.getGhostIndex(piece));
     boardView.drawPiece(piece, DRAWMODE.DRAWPIECE);
 }
 
 /**
  * 다음 블럭 n 개를 표시합니다. n은 설정을 통해 최대 6개까지 표시할 수 있습니다.
  */
-function updateNexts()
+const updateNexts = () =>
 {
 boardView.refreshNexts();
     let arr = UserStorage.nextPieces()
@@ -454,15 +456,15 @@ boardView.refreshNexts();
 /**
  * 라인 몇 개를 지웠는지 표시합니다.
  */
-function updateClearedLines()
+const updateClearedLines = () =>
 {
     //lineArr.innerText = UserStorage.clearedLines;
 }
-function calcScore()
+const calcScore = () =>
 {
     let lines = LineArr.lines.length;
-    let tspin = LineArr.tSpinCounter>=3;
-    let mini = LineArr.tSpinMini;
+    let tspin = LineArr.tSpin;
+    let mini = tspin===T_SPIN_STATE.MINI
 
     let result;
     switch(lines)
@@ -503,7 +505,7 @@ function calcScore()
     }
 }
 
-function updateScore()
+const updateScore = () =>   
 {
     boardView.updateScore(UserStorage.scoreToText());
 }

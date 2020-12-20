@@ -10,14 +10,14 @@ class BoardView{
     /**
      * 무대를 그립니다.
      */
-    initGraphics()
+    initGraphics = () =>
     {
         let ctx = this.ctx;
         ctx.font = "16px 'PressStart2P'";
         ctx.textBaseline = 'top';
         ctx.fillText('HOLD', HOLD_X_OFFSET + this.offset, HOLD_Y_OFFSET);
         ctx.fillText('NEXT', NEXT_X_OFFSET + this.offset, NEXT_Y_OFFSET)
-        ctx.fillRect(HOLD_X_OFFSET + this.offset ,HOLD_Y_OFFSET+30,HOLD_BLOCK_SIZE_OUTLINE*4,HOLD_BLOCK_SIZE_OUTLINE*4)
+        this.refreshHold();
         this.refreshNexts();
 
         let L = X_OFFSET;
@@ -42,7 +42,7 @@ class BoardView{
         this.callDrawOutline(L,U,R,D);
     }
 
-    callDrawOutline(L,U,R,D)
+    callDrawOutline = (L,U,R,D) =>
     {
         let color = (this.player==0?P1_COLORS:P2_COLORS)
         this.drawOutline(L+ this.offset,U,R+ this.offset,D,5, 7, color[1]);
@@ -50,7 +50,7 @@ class BoardView{
         this.drawOutline(L+ this.offset,U,R+ this.offset,D,10, 5, color[0]);
     }
 
-    drawOutline(L, U, R, D, rad, size, color)
+    drawOutline = (L, U, R, D, rad, size, color) =>
     {
         let ctx = this.ctx;
         ctx.strokeStyle = color;
@@ -69,7 +69,7 @@ class BoardView{
     /**
      * 필드를 그립니다.
      */
-    draw(table){
+    draw = table =>{
         this.ctx.fillStyle = COLOR_GREY;
         this.ctx.fillRect(X_OFFSET + this.offset,Y_OFFSET,BOARD_WIDTH*BLOCK_SIZE_OUTLINE,VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE);
 
@@ -93,15 +93,18 @@ class BoardView{
      * @param {Piece} piece 
      * @param {Number} MODE 
      */
-    drawPiece(piece, MODE, index = 0){
+    drawPiece = (piece, MODE, index = 0) => 
+    {
         switch(MODE)
         {
             case DRAWMODE.DRAWPIECE:
-            case DRAWMODE.DRAWGHOST:
                 this.ctx.fillStyle = piece.color;
                 break;
-            case DRAWMODE.HIDEGHOST:
+            case DRAWMODE.DRAWGHOST:
+                this.ctx.fillStyle = GHOST_COLOR_MAP[piece.typeId];
+                break;
             case DRAWMODE.HIDEPIECE:
+            case DRAWMODE.HIDEGHOST:
                 this.ctx.fillStyle = COLOR_BLACK;
                 break;
         }
@@ -111,18 +114,18 @@ class BoardView{
             {
                 if(piece.shape & (0x8000 >> (i*4+j)))
                 {
-                    if(piece.y+i>=0){
-                        var x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
-                        var y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
-                        var w = BLOCK_SIZE; 
-                        var h = BLOCK_SIZE;
-                        this.ctx.fillRect(x,y,w,h);}
+                    var x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
+                    var y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
+                    var w = BLOCK_SIZE; 
+                    var h = BLOCK_SIZE;
+                    if(y>Y_OFFSET)
+                    this.ctx.fillRect(x,y,w,h);
                 }
             }
         }
     }
 
-    drawNext(typeId,index)
+    drawNext = (typeId,index) =>
     {
         for(var i = 0;i<4;i++)
         {
@@ -146,34 +149,35 @@ class BoardView{
      * @param {Number} typeId 표시할 블럭
      * @param {Number} mode 표시 모드
      */
-    drawHold(typeId, mode)
+    drawHold = (typeId, mode) =>
     {
         if(!typeId) return;
         let color;
+        let ctx = this.ctx;
         switch(mode)
         {
             case DRAWMODE.DRAWPIECE:
                 color = COLOR_MAP[typeId];
                 break;
             case DRAWMODE.DRAWGHOST:
-                color = COLOR_GHOST;
+                color = GHOST_COLOR_MAP[typeId];
                 break;
         }
         
+        this.refreshHold();
+        ctx.fillStyle = color;
         for(var i = 0;i<4;i++)
         {
             for(var j = 0;j<4;j++)
             {
-                var x = HOLD_X_OFFSET+j*HOLD_BLOCK_SIZE_OUTLINE + this.offset;
-                var y = HOLD_Y_OFFSET+i*HOLD_BLOCK_SIZE_OUTLINE+30;
-                var w = HOLD_BLOCK_SIZE; 
-                var h = HOLD_BLOCK_SIZE;
-                this.ctx.fillStyle = COLOR_BLACK;
                 if(PIECE_MAP[typeId][0] & (0x8000 >> (i*4+j)))
                 {
-                    this.ctx.fillStyle = color;
+                    var x = HOLD_X_OFFSET+j*HOLD_BLOCK_SIZE_OUTLINE + this.offset;
+                    var y = HOLD_Y_OFFSET+i*HOLD_BLOCK_SIZE_OUTLINE+30;
+                    var w = HOLD_BLOCK_SIZE; 
+                    var h = HOLD_BLOCK_SIZE;
+                    ctx.fillRect(x,y,w,h);
                 }
-                this.ctx.fillRect(x,y,w,h);
             }
         }
     }
@@ -183,36 +187,52 @@ class BoardView{
      * @param {Number} l 번째 행
      * @param {Number} i 번째 프레임
      */
-    clearAnimation(l, i)
+    clearAnimation = (l, i) =>
     {
-        var x = X_OFFSET + this.offset;
-        var y = Y_OFFSET + (l-20) * BLOCK_SIZE_OUTLINE;
-        var width = BLOCK_SIZE_OUTLINE*BOARD_WIDTH-1;
-        var height = BLOCK_SIZE_OUTLINE;
+        var y = Y_OFFSET + (l-20) * BLOCK_SIZE_OUTLINE+1;
+        var w = BLOCK_SIZE;
+        var h = BLOCK_SIZE;
 
         if(i>LINE_CLEAR_FRAMES/2)
             ctx.fillStyle = LINE_CLEAR_WHITE;
         else 
             ctx.fillStyle = LINE_CLEAR_BLACK;
 
-        this.ctx.fillRect(x,y,width,height);
+        for(var i = 0; i<BOARD_WIDTH;i++)
+        {
+            var x = X_OFFSET + BLOCK_SIZE_OUTLINE*i + 1 + this.offset;
+            this.ctx.fillRect(x,y,w,h);
+        }
     }
 
     /**
      * 다음 블럭들을 초기화합니다.
      */
-    refreshNexts()
+    refreshNexts = () =>
     {
-        this.ctx.fillStyle = COLOR_BLACK;
-        this.ctx.fillRect(
-                        NEXT_X_OFFSET + this.offset,
-                        Y_OFFSET+30,
-                        NEXT_BLOCK_SIZE_OUTLINE*6,
-                        DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE
-                        );
+        const ctx = this.ctx;
+        ctx.fillStyle = COLOR_BLACK;
+        ctx.fillRect(
+            NEXT_X_OFFSET + this.offset,                // x
+            Y_OFFSET+30,                                // y
+            NEXT_BLOCK_SIZE_OUTLINE*6,                  // w
+            DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE    // h
+        );
     }
 
-    countDown(i)
+    refreshHold = () =>
+    {
+        const ctx = this.ctx;
+        ctx.fillStyle = COLOR_BLACK;
+        ctx.fillRect(
+            HOLD_X_OFFSET + this.offset,                // x
+            HOLD_Y_OFFSET+30,                           // y
+            HOLD_BLOCK_SIZE_OUTLINE*4,                  // w
+            HOLD_BLOCK_SIZE_OUTLINE*4                   // h
+        );
+    }
+
+        countDown = i =>
     {
         let ctx = this.ctx2;
         ctx.font = "100px 'PressStart2P'";
@@ -235,7 +255,7 @@ class BoardView{
         ctx.fillText(i,BOARD_CENTER_X+this.offset,BOARD_CENTER_Y,BLOCK_SIZE_OUTLINE*10);
     }
 
-    updateScore(score)
+    updateScore = score =>
     {
         let ctx = this.ctx2;
         ctx.clearRect(X_OFFSET+this.offset-5,BOARD_END_Y-5,BLOCK_SIZE_OUTLINE*20+5,35);
