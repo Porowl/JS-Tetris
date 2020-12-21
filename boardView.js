@@ -14,32 +14,47 @@ class BoardView{
     {
         let ctx = this.ctx;
         ctx.font = "16px 'PressStart2P'";
+        ctx.fillStyle = COLOR_WHITE;
         ctx.textBaseline = 'top';
-        ctx.fillText('HOLD', HOLD_X_OFFSET + this.offset, HOLD_Y_OFFSET);
-        ctx.fillText('NEXT', NEXT_X_OFFSET + this.offset, NEXT_Y_OFFSET)
+        ctx.textAlign = 'center'
+        ctx.fillText('NEXT', NEXT_X_OFFSET + NEXT_BLOCK_SIZE_OUTLINE*3 + this.offset, NEXT_Y_OFFSET+5);
+        ctx.fillText('HOLD', HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, HOLD_Y_OFFSET+5);
+        ctx.fillText('LEVEL', HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, Y_OFFSET+(VISIBLE_HEIGHT-5)*BLOCK_SIZE_OUTLINE+5);
         this.refreshHold();
         this.refreshNexts();
 
-        let L = X_OFFSET;
-        let U = Y_OFFSET;
-        let R = X_OFFSET+BOARD_WIDTH*BLOCK_SIZE_OUTLINE;
-        let D = Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE;
+        // BOARD
+        this.callDrawOutline(
+            X_OFFSET,
+            Y_OFFSET,
+            X_OFFSET+BOARD_WIDTH*BLOCK_SIZE_OUTLINE,
+            Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE
+        );
 
-        this.callDrawOutline(L,U,R,D);
+        // NEXTS
+        this.callDrawOutline(
+            NEXT_X_OFFSET,
+            NEXT_Y_OFFSET,
+            NEXT_X_OFFSET + NEXT_BLOCK_SIZE_OUTLINE * 6,
+            NEXT_Y_OFFSET + DIST_BTW_NEXTS * 6 + NEXT_BLOCK_SIZE_OUTLINE+30
+        );
 
-        L = NEXT_X_OFFSET;
-        U = NEXT_Y_OFFSET;
-        R = NEXT_X_OFFSET+NEXT_BLOCK_SIZE_OUTLINE*6;
-        D = NEXT_Y_OFFSET + DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE+30
+        // HOLD
+        this.callDrawOutline(
+            HOLD_X_OFFSET,
+            HOLD_Y_OFFSET,
+            HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 6 ,
+            NEXT_Y_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 5 + 30
+        );
 
-        this.callDrawOutline(L,U,R,D);
+        // LEVEL
+        this.callDrawOutline(
+            HOLD_X_OFFSET,
+            Y_OFFSET+(VISIBLE_HEIGHT-5)*BLOCK_SIZE_OUTLINE,
+            HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 6,
+            Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE,
+        );
 
-        L = HOLD_X_OFFSET;
-        U = HOLD_Y_OFFSET;
-        R = HOLD_X_OFFSET+HOLD_BLOCK_SIZE_OUTLINE*4;
-        D = NEXT_Y_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*4+30
-
-        this.callDrawOutline(L,U,R,D);
     }
 
     callDrawOutline = (L,U,R,D) =>
@@ -95,17 +110,21 @@ class BoardView{
      */
     drawPiece = (piece, MODE, index = 0) => 
     {
+        let ghost = false;
+        let ctx = this.ctx;
+        let color;
         switch(MODE)
         {
             case DRAWMODE.DRAWPIECE:
-                this.ctx.fillStyle = piece.color;
+                color = piece.color;
                 break;
             case DRAWMODE.DRAWGHOST:
-                this.ctx.fillStyle = GHOST_COLOR_MAP[piece.typeId];
+                color = GHOST_COLOR_MAP[piece.typeId];
+                ghost = true;
                 break;
             case DRAWMODE.HIDEPIECE:
             case DRAWMODE.HIDEGHOST:
-                this.ctx.fillStyle = COLOR_BLACK;
+                color = COLOR_BLACK;
                 break;
         }
         for(var i = 0;i<4;i++)
@@ -114,12 +133,20 @@ class BoardView{
             {
                 if(piece.shape & (0x8000 >> (i*4+j)))
                 {
+                    ctx.fillStyle = color;
                     var x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
                     var y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
                     var w = BLOCK_SIZE; 
                     var h = BLOCK_SIZE;
                     if(y>Y_OFFSET)
-                    this.ctx.fillRect(x,y,w,h);
+                    {
+                        ctx.fillRect(x,y,w,h);
+                        if(ghost)
+                        {
+                            ctx.fillStyle = COLOR_BLACK;
+                            ctx.fillRect(x+2,y+2,w-4,h-4);
+                        }
+                    }
                 }
             }
         }
@@ -149,9 +176,9 @@ class BoardView{
      * @param {Number} typeId 표시할 블럭
      * @param {Number} mode 표시 모드
      */
-    drawHold = (typeId, mode) =>
+    drawHold = (typeId=-1, mode) =>
     {
-        if(!typeId) return;
+        if(typeId==-1) return;
         let color;
         let ctx = this.ctx;
         switch(mode)
@@ -160,7 +187,7 @@ class BoardView{
                 color = COLOR_MAP[typeId];
                 break;
             case DRAWMODE.DRAWGHOST:
-                color = GHOST_COLOR_MAP[typeId];
+                color = COLOR_GHOST;
                 break;
         }
         
@@ -172,8 +199,8 @@ class BoardView{
             {
                 if(PIECE_MAP[typeId][0] & (0x8000 >> (i*4+j)))
                 {
-                    var x = HOLD_X_OFFSET+j*HOLD_BLOCK_SIZE_OUTLINE + this.offset;
-                    var y = HOLD_Y_OFFSET+i*HOLD_BLOCK_SIZE_OUTLINE+30;
+                    var x = HOLD_X_OFFSET + (j+1) * HOLD_BLOCK_SIZE_OUTLINE + this.offset;
+                    var y = HOLD_Y_OFFSET + (i+1) * HOLD_BLOCK_SIZE_OUTLINE + 30;
                     var w = HOLD_BLOCK_SIZE; 
                     var h = HOLD_BLOCK_SIZE;
                     ctx.fillRect(x,y,w,h);
@@ -227,8 +254,8 @@ class BoardView{
         ctx.fillRect(
             HOLD_X_OFFSET + this.offset,                // x
             HOLD_Y_OFFSET+30,                           // y
-            HOLD_BLOCK_SIZE_OUTLINE*4,                  // w
-            HOLD_BLOCK_SIZE_OUTLINE*4                   // h
+            HOLD_BLOCK_SIZE_OUTLINE*6,                  // w
+            HOLD_BLOCK_SIZE_OUTLINE*5                   // h
         );
     }
 
@@ -250,7 +277,7 @@ class BoardView{
                 ctx.fillStyle = COLOR_MAP[0];
                 break;
         }
-        ctx.clearRect(BOARD_CENTER_X+this.offset-200,BOARD_CENTER_Y-200,400,400);
+        ctx.clearRect(BOARD_CENTER_X+this.offset-100,BOARD_CENTER_Y-100,300,300);
         if(i==0) return;
         ctx.fillText(i,BOARD_CENTER_X+this.offset,BOARD_CENTER_Y,BLOCK_SIZE_OUTLINE*10);
     }
@@ -268,5 +295,43 @@ class BoardView{
         
         ctx.strokeText(score,BOARD_CENTER_X+this.offset,BOARD_END_Y+12);
         ctx.fillText(score,BOARD_CENTER_X+this.offset,BOARD_END_Y+12);
+    }
+
+    levelProgress = (lines, level) =>
+    {
+        console.log(lines)
+        let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3;
+        let y = Y_OFFSET+(VISIBLE_HEIGHT-2)*BLOCK_SIZE_OUTLINE;
+
+        let ctx = this.ctx2;
+
+        ctx.clearRect(
+            HOLD_X_OFFSET,
+            Y_OFFSET+(VISIBLE_HEIGHT-4)*BLOCK_SIZE_OUTLINE,
+            HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*6,
+            Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE
+        )
+
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center"
+        ctx.font = "24px 'PressStart2P'"; 
+        ctx.fillText(level+1,x,y);
+
+        ctx.lineWidth = 5;
+
+        ctx.beginPath();
+        ctx.arc(x,y,30,0,2*Math.PI,false);
+        ctx.strokeStyle = COLOR_GHOST;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+
+        let start = 3/4*2*Math.PI;
+        let end = lines/((level+1)*5);
+        end = start + 2*Math.PI*end;
+        ctx.arc(x,y,30,start,end,false);
+        ctx.strokeStyle = COLOR_MAP[(level+1)%7];
+        ctx.stroke();
+        ctx.closePath();
     }
 }

@@ -130,8 +130,7 @@ const update = dt =>{
             board.clearLine(LineArr.lines[i]);
         boardView.draw(board.field);
 
-        UserStorage.clearedLines += LineArr.lines.length;
-        updateClearedLines();
+        updateClearedLines(LineArr.lines.length);
         calcScore();
         updateScore();
 
@@ -171,8 +170,8 @@ const inputCycle = () =>
 {
     moveLR();
     rotate();
-    hardDrop();
     hold();
+    hardDrop();
 }
 
 /**
@@ -323,8 +322,8 @@ const rotateAc = a =>
     do
     {
         p = {...piece, 
-                x: piece.x + (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation*2+a][test][0],
-                y: piece.y - (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation*2+a][test][1], 
+                x: piece.x + (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation+a*4][test][0],
+                y: piece.y - (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation+a*4][test][1], 
                 rotation: next,
                 shape: PIECE_MAP[piece.typeId][next],
                 lastMove: LAST_MOVE.SPIN,
@@ -355,7 +354,6 @@ const hold = () =>
         {
             held = true;
             UserStorage.hold = piece.typeId;
-            boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
             boardView.drawPiece(piece, DRAWMODE.HIDEPIECE);
             boardView.drawPiece(piece, DRAWMODE.HIDEGHOST, board.getGhostIndex(piece));
             getNewPiece();
@@ -363,11 +361,12 @@ const hold = () =>
         else
         {
             var temp = UserStorage.hold;
-            UserStorage.hold = piece.typeId;
-            var p = new Piece(temp)
+            var a = piece.typeId;
+            boardView.drawHold(a,DRAWMODE.DRAWGHOST);
+            UserStorage.hold = a;
+            var p = new Piece(temp);
             updatePiece(p);
             piece = p;
-            boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWGHOST);
         }
         repeated = true;
     }
@@ -410,9 +409,9 @@ const checkTopOut = () =>
 const getNewPiece = () =>
 {
     piece = new Piece(UserStorage.newPiece());
+    boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
     updatePiece(piece);
     updateNexts();
-    boardView.drawHold(UserStorage.hold,DRAWMODE.DRAWPIECE);
     repeated = false;
     initDelay = ENTRY_DELAY;
     lineClearDelay = -1;
@@ -436,7 +435,7 @@ const updatePiece = p =>
     
     piece.move(p);
 
-    if(ghostSwitch) boardView.drawPiece(piece, DRAWMODE.DRAWGHOST, board.getGhostIndex(piece));
+    if(ghostSwitch) boardView.drawPiece(p, DRAWMODE.DRAWGHOST, board.getGhostIndex(p));
     boardView.drawPiece(piece, DRAWMODE.DRAWPIECE);
 }
 
@@ -456,8 +455,10 @@ boardView.refreshNexts();
 /**
  * 라인 몇 개를 지웠는지 표시합니다.
  */
-const updateClearedLines = () =>
+const updateClearedLines = (lines) =>
 {
+    UserStorage.clearedLines += lines;
+    UserStorage.levelUp();
     //lineArr.innerText = UserStorage.clearedLines;
 }
 const calcScore = () =>
@@ -508,4 +509,5 @@ const calcScore = () =>
 const updateScore = () =>   
 {
     boardView.updateScore(UserStorage.scoreToText());
+    boardView.levelProgress(UserStorage.clearedLines,UserStorage.level);
 }

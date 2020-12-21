@@ -124,7 +124,6 @@ class Board{
                     var y = p.y + i;     
                     if(!this.isNotBlocked(x,y))
                     {
-                        console.log(`blocked at ${x},${y}`);
                         return false;
                     }
                 }

@@ -21,6 +21,14 @@ class storage{
         return this.level;
     }
     
+    levelUp = () => {
+        if(this.clearedLines>=(this.level+1)*5)
+        {
+            console.log(this.clearedLines,(this.level+1)*5);
+            this.clearedLines -= (this.level+1)*5;
+            this.level++; 
+        }
+    }
     /**
      * 현재 중력을 반환합니다.
      */

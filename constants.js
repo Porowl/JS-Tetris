@@ -1,7 +1,11 @@
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HTML TAGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("infos");
 const ctx2 = canvas2.getContext("2d");
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GRAPHIC MEASUREMENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const BOARD_HEIGHT  = 40;
 const BOARD_WIDTH   = 10;
@@ -16,7 +20,7 @@ const BLOCK_SIZE_OUTLINE = BLOCK_SIZE+2;
 const NEXT_BLOCK_SIZE_OUTLINE = NEXT_BLOCK_SIZE+1;
 const HOLD_BLOCK_SIZE_OUTLINE = HOLD_BLOCK_SIZE+1;
 
-const X_OFFSET = 120;
+const X_OFFSET = 160;
 const Y_OFFSET = 20;
 
 const BOARD_CENTER_X = X_OFFSET + BLOCK_SIZE_OUTLINE*5;
@@ -29,11 +33,10 @@ const NEXT_X_OFFSET = X_OFFSET
 const NEXT_Y_OFFSET = Y_OFFSET;
 const DIST_BTW_NEXTS = 3*NEXT_BLOCK_SIZE_OUTLINE;
 
-const HOLD_X_OFFSET = X_OFFSET - 95;
+const HOLD_X_OFFSET = X_OFFSET - 126;
 const HOLD_Y_OFFSET = Y_OFFSET;
 
 const PLAYER_OFFSET = 500;
-
 
 const DAS = 12;
 const ARR = 2;
@@ -41,27 +44,24 @@ const ENTRY_DELAY = 6;
 
 const LINE_CLEAR_FRAMES = 20;
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ENUMS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 const GRAVITY = [
     1.0,
-    0.93,
-    0.6178,
-    0.47273,
-    0.3552,
+    0.793,
+    0.618,
+    0.473,
+    0.355,
     0.262,
-    0.18968,
-    0.13473,
-    0.09388,
-    0.06415,
-    0.04298,
-    0.02822,
-    0.01815,
-    0.01114,
-    0.00706,
-    0.00421,
-    0.00252,
-    0.00146,
-    0.00082,
-    0.00046
+    0.190,
+    0.135,
+    0.094,
+    0.064,
+    0.043,
+    0.028,
+    0.018,
+    0.011,
+    0.007
 ]
 
 const KEY = {
@@ -109,6 +109,33 @@ const SCORE = {
     PERFECT: 11
 }
 
+const MOVES = {
+    [KEY.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
+}
+
+const LAST_MOVE =
+{
+    NONE: 0,
+    MOVE: 1,
+    SPIN: 2,
+    DOWN: 3
+}
+
+const T_SPIN_STATE =
+{
+    NONE: 0,
+    PROP: 1,
+    MINI: 2
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~COLORS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+const COLOR_BLACK =         "rgb(000,000,000)";
+const COLOR_GREY =          "rgb(040,040,040)";
+const COLOR_WHITE =         "rgb(255,255,255)";
+const COLOR_GHOST =         "rgb(080,080,080)";
+const LINE_CLEAR_WHITE =    "rgba(255,255,255,0.15)";
+const LINE_CLEAR_BLACK =    "rgba(000,000,000,0.15)";
 
 const COLOR_MAP =  [
                     "rgba(114,203,059,1.0)",     //S
@@ -139,13 +166,7 @@ const P2_COLORS = [
                 "rgb(225,154,046)",
                 "rgb(181,112,038)"
             ];
-
-const COLOR_BLACK =         "rgb(000,000,000)";
-const COLOR_GREY =          "rgb(040,040,040)";
-const COLOR_WHITE =         "rgb(255,255,255)";
-const COLOR_GHOST =         "rgb(080,080,080)";
-const LINE_CLEAR_WHITE =    "rgba(255,255,255,0.15)";
-const LINE_CLEAR_BLACK =    "rgba(000,000,000,0.15)";
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LOGICS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const PIECE_MAP = [
     [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
@@ -157,44 +178,26 @@ const PIECE_MAP = [
     [ 0x6600, 0x6600, 0x6600, 0x6600 ]  // 'O'
 ];
 
-const MOVES = {
-    [KEY.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
-    [KEY.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
-    [KEY.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
-}
-
-const LAST_MOVE =
-{
-    NONE: 0,
-    MOVE: 1,
-    SPIN: 2,
-    DOWN: 3
-}
-
-const T_SPIN_STATE =
-{
-    NONE: 0,
-    PROP: 1,
-    MINI: 2
-}
 const OFFSETS = [
-    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0  : 0 -> 1
-    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 0+1: 1 -> 0
-    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1  : 1 -> 2
-    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 1+1: 2 -> 1
-    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 2  : 2 -> 3
-    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 2+1: 3 -> 2
-    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 3  : 3 -> 0
-    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]]   // 3+1: 0 -> 3 
+    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0: 0 -> 1
+    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1: 1 -> 2
+    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 2: 2 -> 3
+    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 3: 3 -> 0
+
+    [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],   // 4: 0 -> 3 
+    [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 5: 1 -> 0
+    [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 6: 2 -> 1
+    [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 7: 3 -> 2
 ];
 
 const I_OFFSETS = [
-    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 0 -> 1
-    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 1 -> 0
-    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 1 -> 2
-    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 2 -> 1
-    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 2 -> 3
-    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 3 -> 2
-    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 3 -> 0
-    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]]   // 0 -> 3
+    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 0: 0 -> 1
+    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 1: 1 -> 2
+    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 2: 2 -> 3
+    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 3: 3 -> 0
+
+    [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 4: 0 -> 3
+    [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 5: 1 -> 0
+    [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 6: 2 -> 1
+    [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 7: 3 -> 2
 ];
