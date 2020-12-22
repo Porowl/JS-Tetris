@@ -5,6 +5,13 @@ const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("infos");
 const ctx2 = canvas2.getContext("2d");
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~STRINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+const NEXT = "NEXT";
+const HOLD = "HOlD";
+const LEVEL = "LEVEL";
+const REMAINING = "LINES REMAINING:"
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GRAPHIC MEASUREMENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const BOARD_HEIGHT  = 40;
@@ -93,6 +100,11 @@ const DRAWMODE = {
     HIDEPIECE: 1,
     DRAWGHOST: 2,
     HIDEGHOST: 3
+}
+
+const GAMEMODE = {
+    STATIC: 0,
+    VARIABLE: 1
 }
 
 const SCORE = {

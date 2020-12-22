@@ -3,7 +3,7 @@ class BoardView{
         this.ctx = ctx;
         this.ctx2 = ctx2
         this.player = player;
-        this.offset = (player==0)?0:PLAYER_OFFSET*1; 
+        this.offset = PLAYER_OFFSET * player; 
         this.initGraphics();
     }
 
@@ -17,9 +17,9 @@ class BoardView{
         ctx.fillStyle = COLOR_WHITE;
         ctx.textBaseline = 'top';
         ctx.textAlign = 'center'
-        ctx.fillText('NEXT', NEXT_X_OFFSET + NEXT_BLOCK_SIZE_OUTLINE*3 + this.offset, NEXT_Y_OFFSET+5);
-        ctx.fillText('HOLD', HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, HOLD_Y_OFFSET+5);
-        ctx.fillText('LEVEL', HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, Y_OFFSET+(VISIBLE_HEIGHT-5)*BLOCK_SIZE_OUTLINE+5);
+        ctx.fillText(NEXT, NEXT_X_OFFSET + NEXT_BLOCK_SIZE_OUTLINE*3 + this.offset, NEXT_Y_OFFSET+5);
+        ctx.fillText(HOLD, HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, HOLD_Y_OFFSET+5);
+        ctx.fillText(LEVEL, HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*3 + this.offset, Y_OFFSET+(VISIBLE_HEIGHT-6)*BLOCK_SIZE_OUTLINE+5);
         this.refreshHold();
         this.refreshNexts();
 
@@ -50,7 +50,7 @@ class BoardView{
         // LEVEL
         this.callDrawOutline(
             HOLD_X_OFFSET,
-            Y_OFFSET+(VISIBLE_HEIGHT-5)*BLOCK_SIZE_OUTLINE,
+            Y_OFFSET+(VISIBLE_HEIGHT-6)*BLOCK_SIZE_OUTLINE,
             HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 6,
             Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE,
         );
@@ -297,11 +297,11 @@ class BoardView{
         ctx.fillText(score,BOARD_CENTER_X+this.offset,BOARD_END_Y+12);
     }
 
-    levelProgress = (lines, level) =>
+    levelProgress = (lines, level, goal) =>
     {
         console.log(lines)
         let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3;
-        let y = Y_OFFSET+(VISIBLE_HEIGHT-2)*BLOCK_SIZE_OUTLINE;
+        let y = Y_OFFSET+(VISIBLE_HEIGHT-3)*BLOCK_SIZE_OUTLINE;
 
         let ctx = this.ctx2;
 
@@ -316,6 +316,8 @@ class BoardView{
         ctx.textAlign = "center"
         ctx.font = "24px 'PressStart2P'"; 
         ctx.fillText(level+1,x,y);
+        ctx.font = "12px 'PressStart2P'"; 
+        ctx.fillText(`${lines}/${goal}`,x,y+BLOCK_SIZE_OUTLINE*2.25);
 
         ctx.lineWidth = 5;
 
@@ -327,7 +329,7 @@ class BoardView{
         ctx.beginPath();
 
         let start = 3/4*2*Math.PI;
-        let end = lines/((level+1)*5);
+        let end = lines/goal;
         end = start + 2*Math.PI*end;
         ctx.arc(x,y,30,start,end,false);
         ctx.strokeStyle = COLOR_MAP[(level+1)%7];

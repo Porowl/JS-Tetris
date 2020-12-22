@@ -1,7 +1,6 @@
 class Board{
-    constructor(player){
+    constructor(){
         this.field = this.initBoard();
-        this.player = player;
         this.remaining = 0;
     }
 
@@ -40,8 +39,14 @@ class Board{
         
         const counter = {
             lines: [], 
-            add(i){
+            add = i => {
                 this.lines.push(i);
+            },
+            get = i => {
+                this.lines[i];
+            },
+            length = () =>{
+                this.lines.length;
             },
             tSpin: T_SPIN_STATE.NONE
         }
