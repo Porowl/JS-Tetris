@@ -20,6 +20,7 @@ class Board{
         return array;
     }
 
+    isEmpty = () => this.remaining===0;
     /**
      * 보드에 해당 피스를 '고정'시킵니다.
      * @param {Piece} p 
@@ -37,33 +38,35 @@ class Board{
             }
         }
         
-        const counter = {
+        const data = {
             lines: [], 
-            add = i => {
+            tSpin: T_SPIN_STATE.NONE,
+            add: function(i)
+            {
                 this.lines.push(i);
             },
-            get = i => {
-                this.lines[i];
+            get: function(i)
+            {
+                return this.lines[i];
             },
-            length = () =>{
-                this.lines.length;
-            },
-            tSpin: T_SPIN_STATE.NONE
+            length: function() 
+            {
+                return this.lines.length;
+            }
         }
         
         var max = Math.min(p.y+24,BOARD_HEIGHT)
         for(var i = p.y+20; i<max; i++)
         {
-            if(this.checkLine(i)) counter.add(i);
+            if(this.checkLine(i)) data.add(i);
         }
         this.remaining += 4;
 
         if(p.typeId===2 && p.lastMove === LAST_MOVE.SPIN)
         {
-            counter.tSpin = this.checkTSpin(p.x, p.y, p.rotation,p.rotTest)
+            data.tSpin = this.checkTSpin(p.x, p.y, p.rotation,p.rotTest)
         }
-
-        return counter;
+        return data;
     }
 
     /**
@@ -209,5 +212,20 @@ class Board{
 
         if(tSpinMini&&l<4) return T_SPIN_STATE.MINI;
         return T_SPIN_STATE.PROP
+    }
+
+    hardDrop = piece =>
+    {
+        let p = {...piece};
+        let counter = 0;
+        while(this.canMoveDown(p))
+        {
+            p.y++;
+            counter++;
+        }
+        return {
+            piece: p,
+            score: counter
+        }
     }
 }

@@ -8,7 +8,7 @@ const ctx2 = canvas2.getContext("2d");
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~STRINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const NEXT = "NEXT";
-const HOLD = "HOlD";
+const HOLD = "HOLD";
 const LEVEL = "LEVEL";
 const REMAINING = "LINES REMAINING:"
 

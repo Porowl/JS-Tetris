@@ -299,7 +299,6 @@ class BoardView{
 
     levelProgress = (lines, level, goal) =>
     {
-        console.log(lines)
         let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3;
         let y = Y_OFFSET+(VISIBLE_HEIGHT-3)*BLOCK_SIZE_OUTLINE;
 

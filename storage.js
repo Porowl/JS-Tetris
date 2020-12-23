@@ -22,7 +22,7 @@ class storage{
     updateLines = (data,perfect) =>
     {
         let lines = data.length();
-        let tspin = LineArr.tSpin;
+        let tspin = data.tSpin;
         let mini = tspin===T_SPIN_STATE.MINI;
 
         let mode;
@@ -70,7 +70,7 @@ class storage{
         }
         if(perfect) this.addScore(SCORE.PERFECT);
 
-        this.clearedLines += i;
+        this.clearedLines += lines;
         let goal = this.getGoal();
         if(this.clearedLines>=goal)
         {
@@ -170,8 +170,8 @@ class storage{
     {
         if(this.keyMap[KEY.LEFT]&&this.keyMap[KEY.RIGHT])
             return 0;
-        else if(this.keyMap[KEY.LEFT]) return 1;
-        else if(this.keyMap[KEY.RIGHT]) return 2;
+        else if(this.keyMap[KEY.LEFT]) return KEYSTATES.L;
+        else if(this.keyMap[KEY.RIGHT]) return KEYSTATES.R;
         return -1;
     }
 
