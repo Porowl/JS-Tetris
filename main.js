@@ -1,6 +1,6 @@
 var now, last;
 var requestId;
-var playerNum = 1;
+var playerNum = 2;
 
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
@@ -49,7 +49,7 @@ const animate = (players) =>
         if(players[i].gameOver)
         {
             cancelAnimationFrame(requestId);
-            requestId = undifined;
+            requestId = undefined;
             alert(`Player ${i} topped out.`) ;
         }
     }

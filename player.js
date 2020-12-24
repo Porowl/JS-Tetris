@@ -3,10 +3,9 @@ class player{
     {
         this.user = i;
         this.board = new Board();
-        this.view = new BoardView(ctx, ctx2, i);
+        this.view = new view(ctx, ctx2, i);
         this.view.draw(this.board.field);
         this.stg = new storage();
-        //this.values = new Stats();
         this.gravity = this.stg.getGravity();
         this.piece;
 
@@ -40,7 +39,6 @@ class player{
     }
 
     countDown = () =>{
-        //console.log("countDown");
         setTimeout(()=>{this.view.countDown(3)},0);
         setTimeout(()=>{this.view.countDown(2)},1000);
         setTimeout(()=>{this.view.countDown(1)},2000);
@@ -49,16 +47,15 @@ class player{
     }
 
     gameStart = () => {
-        //console.log("gameStart");
         this.piece = new Piece(this.stg.newPiece());
         this.updatePiece(this.piece);
         this.updateNexts();
+        this.updateScore();
     }
 
     update = dt =>
     {
-        //console.log("update");
-      
+        //Animation Phase
         if(this.lineClearDelay>0)
         {
             this.lineClearDelay--;
@@ -67,32 +64,38 @@ class player{
                 this.view.clearAnimation(this.clearedLineArr.get(i), this.lineClearDelay);
             return; 
         }
+        // At the end of animation, update board and create new shape
         else if(this.lineClearDelay===0) 
         {
-            console.log(`Clearing ${this.clearedLineArr.length()} lines`);
             for(var i = 0; i<this.clearedLineArr.length();i++)
             {
                 this.board.clearLine(this.clearedLineArr.get(i));
             }
-
             this.view.draw(this.board.field);
 
-            this.stg.updateLines(this.clearedLineArr,this.board.isEmpty());
-            
-            this.view.updateScore(this.stg.scoreToText());
-            this.view.levelProgress(this.stg.clearedLines,this.stg.level,this.stg.getGoal());
+            let scoreArr = this.stg.updateLines(this.clearedLineArr,this.board.isEmpty());
+            this.view.displayScoreArr(scoreArr);
+
+
+            this.updateScore();
 
             this.getNewPiece();
             this.checkTopOut();
         }
+
+        //for 6f init delay
         this.initDelay--;
+
+        //calculates input
         this.inputCycle();
 
+        //Lock phase
         if((this.piece.hardDropped||this.lockDelay>0.5)&&!this.board.canMoveDown(this.piece))
         {
             this.lock(this.piece);
         }
 
+        //fall phase
         if(this.lineClearDelay>0) return;
         if(this.initDelay>0) return;
 
@@ -110,7 +113,6 @@ class player{
 
     moveDownCycle = dt =>
     {
-        //console.log("moveDownCycle");
         if(this.stg.keyMap[KEY.DOWN]&&this.gravity>2/60)
         {
             if(this.moveDown()){
@@ -128,7 +130,6 @@ class player{
 
     moveDown = () =>
     {
-        //console.log("moveDown");
         if(this.board.canMoveDown(this.piece))
         {
             let p = MOVES[KEY.DOWN](this.piece);
@@ -140,7 +141,6 @@ class player{
 
     inputCycle = () =>
     {
-        //console.log("inputCycle");
         this.moveLR();
         this.rotate();
         this.hold();
@@ -149,23 +149,31 @@ class player{
     
     moveLR = () =>
     {
-        console.log(this.LRFrameCounter);
         let p;
         let state = this.stg.checkLR();
-        if(state === KEYSTATES.LR || state === -1)
+        
+        if(state == KEYSTATES.LR || state == -1)
         {
             this.LRFrameCounter = 0;
         }
         else
         {
-            if(this.LRFrameCounter===0
-                ||(this.LRFrameCounter>=DAS&&(this.LRframeCount-DAS)%ARR==0))
+            if(this.LRFrameCounter==0)
             {
-                let key = (state===KEYSTATES.L)?KEY.LEFT:KEY.RIGHT;
+                let key = (state==KEYSTATES.L)?KEY.LEFT:KEY.RIGHT;
                 p = MOVES[key](this.piece);
+            }   
+            else if (this.LRFrameCounter>=DAS)
+            {
+                if ((this.LRFrameCounter-DAS)%ARR==0)
+                {
+                    let key = (state==KEYSTATES.L)?KEY.LEFT:KEY.RIGHT;
+                    p = MOVES[key](this.piece);
+                }
             }
             this.LRFrameCounter++;
         }
+
         if(p){
             if(this.board.valid(p))
             {
@@ -178,27 +186,25 @@ class player{
     {
         let state = this.stg.checkRot();
 
-        if(state === KEYSTATES.UZ || state === -1)
+        if(state == KEYSTATES.UZ || state == -1)
         {
             this.RotateFrameCounter = 0;
         }
-        else
+        else 
         {
-            if(this.RotateFrameCounter===0
-                ||(this.RotateFrameCounter>=DAS&&(this.RotateFrameCounter-DAS)%ARR==0))
+            if(this.RotateFrameCounter==0)
             {
-                if(state===KEYSTATES.U)
-                {
-                    this.rotateAc(0);
-                }
-                else if(state===KEYSTATES.Z)
-                {
-                    this.rotateAc(1);
-                }
-                this.RotateFrameCounter++;
+                state==KEYSTATES.U?this.rotateAc(0):this.rotateAc(1);
             }
+            else if(this.RotateFrameCounter>=DAS)
+            {
+                if((this.RotateFrameCounter-DAS)%ARR==0)
+                    state==KEYSTATES.U?this.rotateAc(0):this.rotateAc(1);
+            }
+            this.RotateFrameCounter++;
         }
     }
+
     rotateAc = mode =>
     {
         const piece = this.piece;
@@ -210,8 +216,8 @@ class player{
         do
         {
             p = {...piece, 
-                    x: piece.x + (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation+mode*4][test][0],
-                    y: piece.y - (piece.typeId===5?I_OFFSETS:OFFSETS)[piece.rotation+mode*4][test][1], 
+                    x: piece.x + (piece.typeId==5?I_OFFSETS:OFFSETS)[piece.rotation+mode*4][test][0],
+                    y: piece.y - (piece.typeId==5?I_OFFSETS:OFFSETS)[piece.rotation+mode*4][test][1], 
                     rotation: next,
                     shape: PIECE_MAP[piece.typeId][next],
                     lastMove: LAST_MOVE.SPIN,
@@ -221,12 +227,8 @@ class player{
         } while(!this.board.valid(p)&&test<5)
 
         if(p)
-        {
             if(this.board.valid(p))
-            {
                 this.updatePiece(p)
-            };
-        }
     }
 
     hold = () =>
@@ -274,20 +276,19 @@ class player{
 
     getNewPiece = () =>
     {
-        //console.log("getNewPiece");
         this.piece = new Piece(this.stg.newPiece());
         this.view.drawHold(this.stg.hold,DRAWMODE.DRAWPIECE);
         this.updatePiece(this.piece);
         this.updateNexts();
-        this.repeated = false;
+        this.holdUsed = false;
         this.initDelay = ENTRY_DELAY;
         this.lineClearDelay = -1;
     }
 
     updatePiece = p =>
     {
-        //console.log("updatePiece");
         let piece = this.piece;
+
         if(this.ghostSwitch) this.view.drawPiece(piece, DRAWMODE.HIDEGHOST, this.board.getGhostIndex(piece));
         this.view.drawPiece(piece, DRAWMODE.HIDEPIECE);
 
@@ -299,10 +300,8 @@ class player{
     
     updateNexts = () =>
     {
-        //console.log("updateNexts");
         this.view.refreshNexts();
         let arr = this.stg.nextPieces()
-        console.log(arr);
         for(var i = 0; i<Math.max(this.stg.nexts,6); i++)
         {
             this.view.drawNext(arr[i],i)
@@ -311,16 +310,14 @@ class player{
 
     lock = (piece) =>
     {
-        //console.log("lock");
         this.lockDelay = 0;
         this.dropRate = 0;
         this.clearedLineArr = this.board.lock(piece);
-        this.lineClearDelay = this.clearedLineArr.length()===0?0:LINE_CLEAR_FRAMES;
+        this.lineClearDelay = this.clearedLineArr.length()==0?0:LINE_CLEAR_FRAMES;
     }
 
     checkTopOut = () =>
     {
-        //console.log("checkTopOut");
         if(!this.board.valid(this.piece))
         {
             this.gameOver = true;
@@ -329,8 +326,7 @@ class player{
 
     updateScore = () =>   
     {
-        //console.log("updateScore");
-        this.view.updateScore(this.stg.scoreToText());
+        this.view.displayScore(this.stg.scoreToText());
         this.view.levelProgress(this.stg.clearedLines,this.stg.getLevel(),this.stg.getGoal());
     }
 }

@@ -1,10 +1,13 @@
-class BoardView{
+class view{
     constructor(ctx, ctx2, player){
         this.ctx = ctx;
         this.ctx2 = ctx2
         this.player = player;
         this.offset = PLAYER_OFFSET * player; 
         this.initGraphics();
+        this.scoreArr = [];
+
+        this.clearLineInfo;
     }
 
     /**
@@ -81,9 +84,9 @@ class BoardView{
         ctx.lineWidth = size;
         ctx.stroke();
     }
-    /**
-     * 필드를 그립니다.
-     */
+
+    /* BOARD & PIECE GRAPHICS */
+
     draw = table =>{
         this.ctx.fillStyle = COLOR_GREY;
         this.ctx.fillRect(X_OFFSET + this.offset,Y_OFFSET,BOARD_WIDTH*BLOCK_SIZE_OUTLINE,VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE);
@@ -99,15 +102,6 @@ class BoardView{
         }
     }
 
-    /**
-     * 블럭을 화면에 표시합니다.
-     * DRAWMODE.DRAWPIECE 블럭을 화면에 표시합니다.
-     * DRAWMODE.DRAWGHOST 고스트를 화면에 표시합니다.
-     * DRAWMODE.HIDEPIECE 블럭을 화면에서 가립니다.
-     * DRAWMODE.HIDECOLOR_GHOST 고스트를 화면에서 가립니다.
-     * @param {Piece} piece 
-     * @param {Number} MODE 
-     */
     drawPiece = (piece, MODE, index = 0) => 
     {
         let ghost = false;
@@ -171,11 +165,18 @@ class BoardView{
         }
     }
 
-    /**
-     * 저장된 블럭을 표시합니다.
-     * @param {Number} typeId 표시할 블럭
-     * @param {Number} mode 표시 모드
-     */
+    refreshNexts = () =>
+    {
+        const ctx = this.ctx;
+        ctx.fillStyle = COLOR_BLACK;
+        ctx.fillRect(
+            NEXT_X_OFFSET + this.offset,                // x
+            Y_OFFSET+30,                                // y
+            NEXT_BLOCK_SIZE_OUTLINE*6,                  // w
+            DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE    // h
+        );
+    }
+
     drawHold = (typeId=-1, mode) =>
     {
         if(typeId==-1) return;
@@ -209,11 +210,18 @@ class BoardView{
         }
     }
 
-    /**
-     * 블럭이 지워지는 애니메이션을 출력합니다.
-     * @param {Number} l 번째 행
-     * @param {Number} i 번째 프레임
-     */
+    refreshHold = () =>
+    {
+        const ctx = this.ctx;
+        ctx.fillStyle = COLOR_BLACK;
+        ctx.fillRect(
+            HOLD_X_OFFSET + this.offset,                // x
+            HOLD_Y_OFFSET+30,                           // y
+            HOLD_BLOCK_SIZE_OUTLINE*6,                  // w
+            HOLD_BLOCK_SIZE_OUTLINE*5                   // h
+        );
+    }
+
     clearAnimation = (l, i) =>
     {
         var y = Y_OFFSET + (l-20) * BLOCK_SIZE_OUTLINE+1;
@@ -232,34 +240,9 @@ class BoardView{
         }
     }
 
-    /**
-     * 다음 블럭들을 초기화합니다.
-     */
-    refreshNexts = () =>
-    {
-        const ctx = this.ctx;
-        ctx.fillStyle = COLOR_BLACK;
-        ctx.fillRect(
-            NEXT_X_OFFSET + this.offset,                // x
-            Y_OFFSET+30,                                // y
-            NEXT_BLOCK_SIZE_OUTLINE*6,                  // w
-            DIST_BTW_NEXTS*6+NEXT_BLOCK_SIZE_OUTLINE    // h
-        );
-    }
+    /* UI GRAPHICS*/
 
-    refreshHold = () =>
-    {
-        const ctx = this.ctx;
-        ctx.fillStyle = COLOR_BLACK;
-        ctx.fillRect(
-            HOLD_X_OFFSET + this.offset,                // x
-            HOLD_Y_OFFSET+30,                           // y
-            HOLD_BLOCK_SIZE_OUTLINE*6,                  // w
-            HOLD_BLOCK_SIZE_OUTLINE*5                   // h
-        );
-    }
-
-        countDown = i =>
+    countDown = i =>
     {
         let ctx = this.ctx2;
         ctx.font = "100px 'PressStart2P'";
@@ -282,7 +265,7 @@ class BoardView{
         ctx.fillText(i,BOARD_CENTER_X+this.offset,BOARD_CENTER_Y,BLOCK_SIZE_OUTLINE*10);
     }
 
-    updateScore = score =>
+    displayScore = score =>
     {
         let ctx = this.ctx2;
         ctx.clearRect(X_OFFSET+this.offset-5,BOARD_END_Y-5,BLOCK_SIZE_OUTLINE*20+5,35);
@@ -299,13 +282,13 @@ class BoardView{
 
     levelProgress = (lines, level, goal) =>
     {
-        let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3;
+        let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3+this.offset;
         let y = Y_OFFSET+(VISIBLE_HEIGHT-3)*BLOCK_SIZE_OUTLINE;
 
         let ctx = this.ctx2;
 
         ctx.clearRect(
-            HOLD_X_OFFSET,
+            HOLD_X_OFFSET+this.offset,
             Y_OFFSET+(VISIBLE_HEIGHT-4)*BLOCK_SIZE_OUTLINE,
             HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE*6,
             Y_OFFSET+VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE
@@ -334,5 +317,29 @@ class BoardView{
         ctx.strokeStyle = COLOR_MAP[(level+1)%7];
         ctx.stroke();
         ctx.closePath();
+    }
+
+    displayScoreArr = scoreArr =>
+    {
+        if(scoreArr.length==0) return;
+        let ctx = this.ctx2;
+        
+        clearTimeout(this.clearLineInfo);
+        ctx.clearRect(0,BOARD_END_Y+20+this.offset,BLOCK_SIZE_OUTLINE*40+5,100);
+
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center"
+        ctx.font = "15px 'PressStart2P'"; 
+        ctx.strokeStyle = COLOR_GREY;
+        ctx.lineWidth = 4;
+        ctx.fillStyle = COLOR_WHITE;
+        
+        for(var i = 0; i<scoreArr.length;i++)
+        {
+            let text = `${scoreArr[i][0]}  +${scoreArr[i][1]}`;
+            ctx.strokeText(text,BOARD_CENTER_X+this.offset,BOARD_END_Y+12+35*(i+1));
+            ctx.fillText(text,BOARD_CENTER_X+this.offset,BOARD_END_Y+12+35*(i+1));    
+        }
+        this.clearLineInfo = setTimeout(()=>ctx.clearRect(0+this.offset,BOARD_END_Y+20,BLOCK_SIZE_OUTLINE*40+5,100),750);
     }
 }

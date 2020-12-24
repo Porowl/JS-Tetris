@@ -12,6 +12,17 @@ const HOLD = "HOLD";
 const LEVEL = "LEVEL";
 const REMAINING = "LINES REMAINING:"
 
+const CLEAR_STRINGS = 
+{
+    SINGLE: "SINGLE",
+    DOUBLE: "DOUBLE",
+    TRIPLE: "TRIPLE",
+    TETRIS: "TETRIS",
+    MINI: "MINI ",
+    T_SPIN: "T-SPIN ",
+    PERFECT: "PERFECT"
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GRAPHIC MEASUREMENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const BOARD_HEIGHT  = 40;

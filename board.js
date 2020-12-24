@@ -41,31 +41,20 @@ class Board{
         const data = {
             lines: [], 
             tSpin: T_SPIN_STATE.NONE,
-            add: function(i)
-            {
-                this.lines.push(i);
-            },
-            get: function(i)
-            {
-                return this.lines[i];
-            },
-            length: function() 
-            {
-                return this.lines.length;
-            }
+            add: function(i) { this.lines.push(i); },
+            get: function(i) { return this.lines[i]; },
+            length: function() { return this.lines.length;}
         }
         
         var max = Math.min(p.y+24,BOARD_HEIGHT)
         for(var i = p.y+20; i<max; i++)
-        {
             if(this.checkLine(i)) data.add(i);
-        }
+
         this.remaining += 4;
 
         if(p.typeId===2 && p.lastMove === LAST_MOVE.SPIN)
-        {
-            data.tSpin = this.checkTSpin(p.x, p.y, p.rotation,p.rotTest)
-        }
+            data.tSpin = this.checkTSpin(p.x, p.y, p.rotation,p.rotTest);
+        
         return data;
     }
 

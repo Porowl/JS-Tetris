@@ -1,17 +1,23 @@
 class storage{
     constructor(){
-        this.index = -1;
-        this.score = 0;
-        this.timer = 0;
         this.level = 0;
         this.clearedLines = 0;
-        this.nexts = 6;
-        this.hold;
+        this.score = 0;
+        this.combo = 0;
+
         this.b2b = false;
-        this.initKeyMap();
+
+        /* Settings */
+
         this.gameMode = GAMEMODE.STATIC;
+        this.nexts = 6;
+        this.initKeyMap();
+
+        /* Pieces */
         this.bag = 0x00;
         this.pieces = this.initPieces();
+        this.index = -1;
+        this.hold;
     }
 
     /**
@@ -24,6 +30,7 @@ class storage{
         let lines = data.length();
         let tspin = data.tSpin;
         let mini = tspin===T_SPIN_STATE.MINI;
+        let scoreArr = [];
 
         let mode;
         if(tspin!==T_SPIN_STATE.NONE)
@@ -66,9 +73,9 @@ class storage{
         }
         if(mode)
         {
-            this.addScore(mode)
+            scoreArr.push(this.addScore(mode));
         }
-        if(perfect) this.addScore(SCORE.PERFECT);
+        if(perfect) scoreArr.push(this.addScore(SCORE.PERFECT));
 
         this.clearedLines += lines;
         let goal = this.getGoal();
@@ -77,6 +84,10 @@ class storage{
             this.clearedLines -=goal;
             this.level++;
         }
+
+        (lines>0)?this.combo++:this.combo=0;
+    
+        return scoreArr;
     }
     /**
      * 현재 중력을 반환합니다.
@@ -104,16 +115,6 @@ class storage{
      */
     nextPieces = () => this.pieces.slice(this.index+1,this.index+8);
     
-    /**
-     * 다중 키 입력을 받기 위한 일차 배열을 생성합니다.
-     */
-    initKeyMap = () =>{
-        this.keyMap = [];
-        for(var i = 0;i<101;i++){
-            this.keyMap.push(false);
-        }
-    }
-
     /**
      * 첫 7개 블럭을 생성합니다.
      */
@@ -156,6 +157,16 @@ class storage{
     {
         if(this.bag == 0x7f) // 0111 1111
             this.bag = 0x00
+    }
+
+    /**
+     * 다중 키 입력을 받기 위한 일차 배열을 생성합니다.
+     */
+    initKeyMap = () =>{
+        this.keyMap = [];
+        for(var i = 0;i<101;i++){
+            this.keyMap.push(false);
+        }
     }
 
     /**
@@ -204,53 +215,67 @@ class storage{
         let last = this.b2b;
         let mult = this.level+1
         let calc = 0;
+        let text;
         switch(mode)
         {
             case SCORE.SINGLE:
                 calc = 100;
                 this.b2b = false;
+                text = CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.DOUBLE:
                 calc = 300;
                 this.b2b = false;
+                text = CLEAR_STRINGS.DOUBLE;
                 break;
             case SCORE.TRIPLE:
                 calc = 500;
                 this.b2b = false;
+                text = CLEAR_STRINGS.TRIPLE;
                 break;
             case SCORE.TETRIS:
                 calc = 800;
                 this.b2b = true;
+                text = CLEAR_STRINGS.TETRIS;
                 break;
             case SCORE.MTS:
                 calc = 100;
+                text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.MINI;
                 break;
             case SCORE.MTSS:
                 calc = 200;
                 this.b2b = true;
+                text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.MINI + CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.TS:
                 calc = 400;
+                text = CLEAR_STRINGS.T_SPIN;
                 break;
             case SCORE.TSS:
                 calc = 800;
                 this.b2b = true;
+                text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.TSD:
                 calc = 1200;
                 this.b2b = true;
+                text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.DOUBLE;
                 break;
             case SCORE.TST:
                 calc = 1600;
                 this.b2b = true;
+                text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.TRIPLE;
                 break;
             case SCORE.PERFECT:
                 this.score += 30000;
-                return;
+                text = CLEAR_STRINGS.PERFECT;
+                return [text, 30000];
         }
         if(last&&this.b2b) calc = calc*1.5
         calc = calc*mult;
         this.score += calc;
+
+        return [text,calc];
     }
 
     addDropScore = n => this.score+=n;
