@@ -51,3 +51,6 @@ canvas{
     color: white;
     border: white solid 1px;
 }
+.settings {
+    display: hidden;
+}
