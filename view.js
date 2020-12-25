@@ -296,6 +296,7 @@ class view{
 
         ctx.textBaseline = "middle";
         ctx.textAlign = "center"
+        ctx.fillStyle = COLOR_WHITE;
         ctx.font = "24px 'PressStart2P'"; 
         ctx.fillText(level+1,x,y);
         ctx.font = "12px 'PressStart2P'"; 
@@ -325,7 +326,7 @@ class view{
         let ctx = this.ctx2;
         
         clearTimeout(this.clearLineInfo);
-        ctx.clearRect(0,BOARD_END_Y+20+this.offset,BLOCK_SIZE_OUTLINE*40+5,100);
+        ctx.clearRect(0,BOARD_END_Y+25+this.offset,BLOCK_SIZE_OUTLINE*40+5,100);
 
         ctx.textBaseline = "middle";
         ctx.textAlign = "center"
@@ -340,6 +341,6 @@ class view{
             ctx.strokeText(text,BOARD_CENTER_X+this.offset,BOARD_END_Y+12+35*(i+1));
             ctx.fillText(text,BOARD_CENTER_X+this.offset,BOARD_END_Y+12+35*(i+1));    
         }
-        this.clearLineInfo = setTimeout(()=>ctx.clearRect(0+this.offset,BOARD_END_Y+20,BLOCK_SIZE_OUTLINE*40+5,100),750);
+        this.clearLineInfo = setTimeout(()=>ctx.clearRect(0+this.offset,BOARD_END_Y+25,BLOCK_SIZE_OUTLINE*40+5,100),750);
     }
 }

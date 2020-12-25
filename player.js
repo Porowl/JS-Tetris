@@ -1,11 +1,12 @@
 class player{
-    constructor(i)
+    constructor(i, random)
     {
         this.user = i;
         this.board = new Board();
         this.view = new view(ctx, ctx2, i);
         this.view.draw(this.board.field);
         this.stg = new storage();
+        this.random = random;
         this.gravity = this.stg.getGravity();
         this.piece;
 
@@ -47,7 +48,7 @@ class player{
     }
 
     gameStart = () => {
-        this.piece = new Piece(this.stg.newPiece());
+        this.piece = new Piece(this.random.getPiece(this.stg.getIndexInc()));
         this.updatePiece(this.piece);
         this.updateNexts();
         this.updateScore();
@@ -276,7 +277,7 @@ class player{
 
     getNewPiece = () =>
     {
-        this.piece = new Piece(this.stg.newPiece());
+        this.piece = new Piece(this.random.getPiece(this.stg.getIndexInc()));
         this.view.drawHold(this.stg.hold,DRAWMODE.DRAWPIECE);
         this.updatePiece(this.piece);
         this.updateNexts();
@@ -301,7 +302,7 @@ class player{
     updateNexts = () =>
     {
         this.view.refreshNexts();
-        let arr = this.stg.nextPieces()
+        let arr = this.random.nextPieces(this.stg.getIndex());
         for(var i = 0; i<Math.max(this.stg.nexts,6); i++)
         {
             this.view.drawNext(arr[i],i)
@@ -326,7 +327,7 @@ class player{
 
     updateScore = () =>   
     {
-        this.view.displayScore(this.stg.scoreToText());
         this.view.levelProgress(this.stg.clearedLines,this.stg.getLevel(),this.stg.getGoal());
+        this.view.displayScore(this.stg.scoreToText());
     }
 }

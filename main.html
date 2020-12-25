@@ -16,8 +16,10 @@
                 Option
             </button>
         </div>
-        <div id ="settings", class = "settings">
-            
+        <div id ="settings" class = "settings" hidden>
+            GAME MODE: <button onclick="settingsButton(0,0)">◀</button><div id="GAMEMODE_GOALS">NORMAL</div><button onClick="settingsButton(0,1)">▶</button>
+            <br> 
+            　PLAYERS　: <button onclick="settingsButton(1,0)">◀</button><div id="GAMEMODE_PLAYER">1</div><button onClick="settingsButton(1,1)">▶</button>
         </div>
     </div>
     <canvas id="field" width="1024" height="768" z-index="0"></canvas>
@@ -29,6 +31,7 @@
 <script src="view.js" type="text/javascript"></script>
 <script src="Piece.js" type="text/javascript"></script>
 <script src="storage.js" type="text/javascript"></script>
+<script src="random.js" type="text/javascript"></script>
 <script src="player.js" type="text/javascript"></script>
 <script src="main.js" type="text/javascript"></script>
 

@@ -212,6 +212,7 @@ class Board{
             p.y++;
             counter++;
         }
+        p.lastMove = LAST_MOVE.DOWN;
         return {
             piece: p,
             score: counter

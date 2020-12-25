@@ -1,7 +1,5 @@
 var now, last;
 var requestId;
-var playerNum = 2;
-
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
  * keydown 이벤트와 keyup 이벤트 생성 후
@@ -17,11 +15,12 @@ const init = () =>
 
 const gameStart = () => {
     document.getElementById("main").hidden = true;
-
     let players = [];
+    let playerNum = settings[1]+1;
+    let randomEngine = new random();
     for(let i = 0; i<playerNum;i++)
     {
-        players.push(new player(i));
+        players.push(new player(i, randomEngine));
     }
     for(let i = 0; i<playerNum;i++)
     {
@@ -39,6 +38,8 @@ const gameStart = () => {
  */
 const animate = (players) =>
 {
+    let playerNum = settings[1]+1;
+
     now = timeStamp();
     var dt = (now-last)/1000.0;
     last = now;
@@ -54,6 +55,31 @@ const animate = (players) =>
         }
     }
     if(requestId) requestID = requestAnimationFrame(()=>{animate(players)});
+}
+
+const toggleSettings = () =>
+{
+    var a = document.getElementById("settings");
+    a.hidden = !a.hidden
+}
+
+const settingsButton = (index, lr) =>
+{
+    switch(index)
+    {
+        case 0:
+        {
+            settings[0] = (settings[0]+1)%2;
+            document.getElementById("GAMEMODE_GOALS").innerText = settings[0]==0?"NORMAL":"VARIABLE";
+        }
+        break;
+        case 1:
+        {
+            settings[1] = (settings[1]+1)%2;
+            document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]==0?"1":"2";
+        }
+        break;
+    }
 }
 
 const timeStamp = () =>

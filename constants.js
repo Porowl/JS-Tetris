@@ -5,6 +5,12 @@ const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("infos");
 const ctx2 = canvas2.getContext("2d");
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+const settings = [
+    0,  // 0: GAME MODE
+    0   // 1: Player Num (+1 when loaded);
+];
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~STRINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const NEXT = "NEXT";

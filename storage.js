@@ -9,14 +9,13 @@ class storage{
 
         /* Settings */
 
-        this.gameMode = GAMEMODE.STATIC;
+        this.gameMode = settings[0]==0?GAMEMODE.STATIC:GAMEMODE.VARIABLE;
         this.nexts = 6;
         this.initKeyMap();
 
         /* Pieces */
         this.bag = 0x00;
-        this.pieces = this.initPieces();
-        this.index = -1;
+        this.index = 0;
         this.hold;
     }
 
@@ -77,7 +76,44 @@ class storage{
         }
         if(perfect) scoreArr.push(this.addScore(SCORE.PERFECT));
 
+        if(this.gameMode == GAMEMODE.VARIABLE)
+        {
+            switch(mode)
+            {
+                case SCORE.SINGLE:
+                    lines = 1;
+                    break;
+                case SCORE.DOUBLE:
+                    lines = 3;
+                    break;
+                case SCORE.TRIPLE:
+                    lines = 5;
+                    break;
+                case SCORE.TETRIS:
+                    lines = 8;
+                    break;
+                case SCORE.MTS:
+                    lines = 1;
+                    break;
+                case SCORE.MTSS:
+                    lines = 1;
+                    break;
+                case SCORE.TS:
+                    lines = 4;
+                    break;
+                case SCORE.TSS:
+                    lines = 8;
+                    break;
+                case SCORE.TSD:
+                    lines = 12;
+                    break;
+                case SCORE.TST:
+                    lines = 16;
+                    break;
+            }
+        } 
         this.clearedLines += lines;
+        
         let goal = this.getGoal();
         if(this.clearedLines>=goal)
         {
@@ -97,67 +133,9 @@ class storage{
     /**
      * 현재 몇 번째 블럭인지를 표시합니다.
      */
+    getIndexInc = () => this.index++;
+
     getIndex = () => this.index;
-
-    /**
-     * 현재 블럭을 가져옵니다.
-     */
-    newPiece = () =>
-    {
-        this.index++;
-        if(this.pieces.length<this.index+7) this.addPiece();
-        return this.pieces[this.index];
-    }
-
-    /**
-     * 다음 n 번째 블럭을 가져옵니다.
-     * @param {int} n 
-     */
-    nextPieces = () => this.pieces.slice(this.index+1,this.index+8);
-    
-    /**
-     * 첫 7개 블럭을 생성합니다.
-     */
-    initPieces = () => {
-        var tempArr =[]
-        for(var i = 0; i<7;i++){
-            tempArr.push(this.pullTet());
-        }
-        return tempArr;
-    }
-
-    /**
-     * 다음 블럭을 추가합니다.
-     */
-    addPiece = () => {
-        this.pieces.push(this.pullTet());
-    }
-
-    /**
-     * 다음 블럭을 난수로 가져옵니다.
-     * 가이드라인에 따라 7개의 블럭이 다 나오고 난 뒤에
-     * 난수가 초기화됩니다.
-     */
-    pullTet = () =>
-    {
-        do{
-            var temp = parseInt(Math.random()*7);
-        } while ((0x40>>temp ) & this.bag)
-
-        this.bag = (this.bag | (0x40>>temp));
-
-        this.checkBagFull();
-        return temp;
-    }
-
-    /**
-     * 현재 7개의 블럭이 다 나왔는지 확인합니다.
-     */
-    checkBagFull = () =>
-    {
-        if(this.bag == 0x7f) // 0111 1111
-            this.bag = 0x00
-    }
 
     /**
      * 다중 키 입력을 받기 위한 일차 배열을 생성합니다.
