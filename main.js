@@ -51,7 +51,7 @@ const animate = (players) =>
         {
             cancelAnimationFrame(requestId);
             requestId = undefined;
-            alert(`Player ${i} topped out.`) ;
+            alert(DEATH_MESSAGE(i));
         }
     }
     if(requestId) requestID = requestAnimationFrame(()=>{animate(players)});
@@ -76,7 +76,7 @@ const settingsButton = (index, lr) =>
         case 1:
         {
             settings[1] = (settings[1]+1)%2;
-            document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]==0?"1":"2";
+            document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]+1;
         }
         break;
     }
@@ -105,5 +105,7 @@ const resize = () =>{
     canvas.style.height = ch;
     canvas2.style.width = cw;
     canvas2.style.height = ch;
+    canvas3.style.width = cw;
+    canvas3.style.height = ch;
 }
 

@@ -1,9 +1,11 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HTML TAGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const canvas = document.getElementById("field");
-const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("infos");
+const canvas3 = document.getElementById("animation");
+const ctx = canvas.getContext("2d");
 const ctx2 = canvas2.getContext("2d");
+const ctx3 = canvas3.getContext("2d");
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 const settings = [
@@ -17,8 +19,9 @@ const NEXT = "NEXT";
 const HOLD = "HOLD";
 const LEVEL = "LEVEL";
 const REMAINING = "LINES REMAINING:"
+const DEATH_MESSAGE = i => `Player ${i+1} topped out.`;
 
-const CLEAR_STRINGS = 
+const CLEAR_STRINGS = Object.freeze(
 {
     SINGLE: "SINGLE",
     DOUBLE: "DOUBLE",
@@ -27,7 +30,7 @@ const CLEAR_STRINGS =
     MINI: "MINI ",
     T_SPIN: "T-SPIN ",
     PERFECT: "PERFECT"
-}
+});
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GRAPHIC MEASUREMENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -40,7 +43,7 @@ const BLOCK_SIZE = 20;
 const NEXT_BLOCK_SIZE = 10;
 const HOLD_BLOCK_SIZE = 15;
 
-const BLOCK_SIZE_OUTLINE = BLOCK_SIZE+2;
+const BLOCK_SIZE_OUTLINE = BLOCK_SIZE;
 const NEXT_BLOCK_SIZE_OUTLINE = NEXT_BLOCK_SIZE+1;
 const HOLD_BLOCK_SIZE_OUTLINE = HOLD_BLOCK_SIZE+1;
 
@@ -67,10 +70,12 @@ const ARR = 2;
 const ENTRY_DELAY = 6;
 
 const LINE_CLEAR_FRAMES = 20;
+const LOCK_ANIMATION_FRAMES = 15;
+const HARDDROP_ANIMATION_FRAMES = 2;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ENUMS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-const GRAVITY = [
+const GRAVITY = Object.freeze([
     1.0,
     0.793,
     0.618,
@@ -86,7 +91,7 @@ const GRAVITY = [
     0.018,
     0.011,
     0.007
-]
+]);
 
 const KEY = {
     SHIFT:  16,     //hold
@@ -103,28 +108,32 @@ const KEY = {
     Z:      90      //rotate counterclockwise
 };
 
-const KEYSTATES = {
+const KEYSTATES = Object.freeze(
+{
     LR: 0,
     L : 1,
     R : 2,
     UZ : 3,
     U : 4,
     Z : 5
-};
+});
 
-const DRAWMODE = {
+const DRAWMODE = Object.freeze(
+{
     DRAWPIECE: 0,
     HIDEPIECE: 1,
     DRAWGHOST: 2,
     HIDEGHOST: 3
-}
+});
 
-const GAMEMODE = {
+const GAMEMODE = Object.freeze(
+{
     STATIC: 0,
     VARIABLE: 1
-}
+});
 
-const SCORE = {
+const SCORE = Object.freeze(
+{
     SINGLE: 1,
     DOUBLE: 2,
     TRIPLE: 3,
@@ -136,21 +145,22 @@ const SCORE = {
     TSD: 9,
     TST: 10,
     PERFECT: 11
-}
+});
 
-const MOVES = {
+const MOVES = Object.freeze(
+{
     [KEY.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
     [KEY.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
     [KEY.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
-}
+});
 
-const LAST_MOVE =
+const LAST_MOVE = Object.freeze(
 {
     NONE: 0,
     MOVE: 1,
     SPIN: 2,
     DOWN: 3
-}
+});
 
 const T_SPIN_STATE =
 {
@@ -165,26 +175,32 @@ const COLOR_WHITE =         "rgb(255,255,255)";
 const COLOR_GHOST =         "rgb(080,080,080)";
 const LINE_CLEAR_WHITE =    "rgba(255,255,255,0.15)";
 const LINE_CLEAR_BLACK =    "rgba(000,000,000,0.15)";
+const PIECE_3D_ADD = "rgba(0,0,0,0.3)";
 
-const COLOR_MAP =  [
-                    "rgba(114,203,059,1.0)",     //S
-                    "rgba(255,050,019,1.0)",     //Z
-                    "rgba(160,000,241,1.0)",     //T
-                    "rgba(255,151,028,1.0)",     //L
-                    "rgba(003,065,174,1.0)",     //J
-                    "rgba(000,224,187,1.0)",     //I
-                    "rgba(255,213,000,1.0)"      //O
-                ];
+const LOCK_WHITE = "rgba(255,255,255,0.07)";
 
-const GHOST_COLOR_MAP =  [
+const COLOR_MAP =  Object.freeze(
+[
+    "rgba(114,203,059,1.0)",     //S
+    "rgba(255,050,019,1.0)",     //Z
+    "rgba(160,000,241,1.0)",     //T
+    "rgba(255,151,028,1.0)",     //L
+    "rgba(003,065,174,1.0)",     //J
+    "rgba(000,224,187,1.0)",     //I
+    "rgba(255,213,000,1.0)",     //O
+    COLOR_GREY                   //GARBAGE
+]);
+
+const GHOST_COLOR_MAP = Object.freeze(
+[
     "rgba(000,240,000,0.5)",     //S
     "rgba(240,000,000,0.5)",     //Z
     "rgba(160,000,241,0.5)",     //T
     "rgba(239,160,000,0.5)",     //L
-    "rgba(000,000,240,0.75)",     //J
+    "rgba(000,000,240,0.75)",    //J
     "rgba(000,224,187,0.5)",     //I
     "rgba(240,240,000,0.5)"      //O
-];
+]);
 
 const P1_COLORS = [
                 "rgb(000,161,224)",
@@ -197,7 +213,8 @@ const P2_COLORS = [
             ];
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LOGICS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-const PIECE_MAP = [
+const PIECE_MAP = Object.freeze(
+[
     [ 0x6C00, 0x4620, 0x06C0, 0x8C40 ], // 'S' 
     [ 0xC600, 0x2640, 0x0C60, 0x4C80 ], // 'Z' 
     [ 0x4E00, 0x4640, 0x0E40, 0x4C40 ], // 'T' 
@@ -205,9 +222,10 @@ const PIECE_MAP = [
     [ 0x8E00, 0x6440, 0xE200, 0x44C0 ], // 'J' 
     [ 0x0F00, 0x2222, 0x00F0, 0x4444 ], // 'I' 
     [ 0x6600, 0x6600, 0x6600, 0x6600 ]  // 'O'
-];
+]);
 
-const OFFSETS = [
+const OFFSETS = Object.freeze(
+[
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 0: 0 -> 1
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 1: 1 -> 2
     [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],  // 2: 2 -> 3
@@ -217,9 +235,10 @@ const OFFSETS = [
     [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],  // 5: 1 -> 0
     [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]],  // 6: 2 -> 1
     [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],  // 7: 3 -> 2
-];
+]);
 
-const I_OFFSETS = [
+const I_OFFSETS = Object.freeze(
+[
     [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 0: 0 -> 1
     [[0,0],[-1,0],[ 2,0],[-1, 2],[ 2,-1]],  // 1: 1 -> 2
     [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 2: 2 -> 3
@@ -229,4 +248,4 @@ const I_OFFSETS = [
     [[0,0],[ 2,0],[-1,0],[ 2, 1],[-1,-2]],  // 5: 1 -> 0
     [[0,0],[ 1,0],[-2,0],[ 1,-2],[-2, 1]],  // 6: 2 -> 1
     [[0,0],[-2,0],[ 1,0],[-2,-1],[ 1, 2]],  // 7: 3 -> 2
-];
+]);

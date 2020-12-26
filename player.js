@@ -3,7 +3,7 @@ class player{
     {
         this.user = i;
         this.board = new Board();
-        this.view = new view(ctx, ctx2, i);
+        this.view = new view(ctx, ctx2, ctx3, i);
         this.view.draw(this.board.field);
         this.stg = new storage();
         this.random = random;
@@ -269,6 +269,7 @@ class player{
             var result = this.board.hardDrop(this.piece);
             this.updatePiece(result.piece);
             this.stg.addDropScore(result.score*2)
+            this.view.hardDropAnimation(this.piece);
             this.piece.hardDropped = true;
             this.stg.keyMap[KEY.SPACE] = false;
             this.stg.keyMap[KEY.H] = false;
@@ -315,6 +316,7 @@ class player{
         this.dropRate = 0;
         this.clearedLineArr = this.board.lock(piece);
         this.lineClearDelay = this.clearedLineArr.length()==0?0:LINE_CLEAR_FRAMES;
+        this.view.lockAnimation(piece);
     }
 
     checkTopOut = () =>

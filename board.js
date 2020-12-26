@@ -218,4 +218,20 @@ class Board{
             score: counter
         }
     }
+
+    addGarbage = n =>
+    {
+        for(let y = 0; y<BOARD_HEIGHT-n;y++)
+            for(let x = 0; x<BOARD_WIDTH;x++)
+                this.field[y][x] = this.field[y+n][x];
+
+        let empty = parseInt(Math.random()*BOARD_WIDTH);
+        for(let y = BOARD_HEIGHT-n;y<BOARD_HEIGHT;y++)
+        {
+            let chance = parseInt(Math.random()*BOARD_WIDTH);
+            if(chance<3) empty = parseInt(Math.random()*BOARD_WIDTH);
+            for(let x = 0; x<BOARD_WIDTH;x++)
+                this.field[y][x] = (x==empty)?0:7;
+        }
+    }
 }

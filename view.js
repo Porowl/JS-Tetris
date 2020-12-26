@@ -1,7 +1,8 @@
 class view{
-    constructor(ctx, ctx2, player){
-        this.ctx = ctx;
-        this.ctx2 = ctx2
+    constructor(ctx, ctx2, ctx3, player){
+        this.boardCtx = ctx;
+        this.infoCtx = ctx2;
+        this.aniCtx = ctx3;
         this.player = player;
         this.offset = PLAYER_OFFSET * player; 
         this.initGraphics();
@@ -15,7 +16,7 @@ class view{
      */
     initGraphics = () =>
     {
-        let ctx = this.ctx;
+        let ctx = this.boardCtx;
         ctx.font = "16px 'PressStart2P'";
         ctx.fillStyle = COLOR_WHITE;
         ctx.textBaseline = 'top';
@@ -70,7 +71,7 @@ class view{
 
     drawOutline = (L, U, R, D, rad, size, color) =>
     {
-        let ctx = this.ctx;
+        let ctx = this.boardCtx;
         ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.arc(L,U,rad,Math.PI,Math.PI*3/2,false);
@@ -88,29 +89,37 @@ class view{
     /* BOARD & PIECE GRAPHICS */
 
     draw = table =>{
-        this.ctx.fillStyle = COLOR_GREY;
-        this.ctx.fillRect(X_OFFSET + this.offset,Y_OFFSET,BOARD_WIDTH*BLOCK_SIZE_OUTLINE,VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE);
+        this.boardCtx.fillStyle = COLOR_GREY;
+        this.boardCtx.fillRect(X_OFFSET + this.offset,Y_OFFSET,BOARD_WIDTH*BLOCK_SIZE_OUTLINE,VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE);
 
-        for(let i = 0;i<VISIBLE_HEIGHT;i++){
-            for(let j = 0; j<BOARD_WIDTH; j++){
+        for(let i = 0;i<VISIBLE_HEIGHT;i++)
+            for(let j = 0; j<BOARD_WIDTH; j++)
+            {
                 let x = X_OFFSET + j * BLOCK_SIZE_OUTLINE + 1 + this.offset;
                 let y = Y_OFFSET + i * BLOCK_SIZE_OUTLINE + 1;
                 let color = table[i+20][j] - 1;
-                this.ctx.fillStyle = color<0?COLOR_BLACK:COLOR_MAP[color];
-                this.ctx.fillRect(x,y,BLOCK_SIZE,BLOCK_SIZE);
+                this.boardCtx.fillStyle = color<0?COLOR_BLACK:COLOR_MAP[color];
+                this.boardCtx.fillRect(x,y,BLOCK_SIZE,BLOCK_SIZE);
+                if(table[i+20][j]!=0)
+                {
+                    ctx.fillStyle = PIECE_3D_ADD;
+                    const offset = 3;
+                    ctx.fillRect(x+offset,y+offset,BLOCK_SIZE-offset*2,BLOCK_SIZE-offset*2);
+                }
             }
-        }
     }
 
     drawPiece = (piece, MODE, index = 0) => 
     {
         let ghost = false;
-        let ctx = this.ctx;
+        let piece3d = true;
+        let ctx = this.boardCtx;
         let color;
         switch(MODE)
         {
             case DRAWMODE.DRAWPIECE:
                 color = piece.color;
+                piece3d = true;
                 break;
             case DRAWMODE.DRAWGHOST:
                 color = GHOST_COLOR_MAP[piece.typeId];
@@ -121,53 +130,52 @@ class view{
                 color = COLOR_BLACK;
                 break;
         }
-        for(var i = 0;i<4;i++)
-        {
-            for(var j = 0;j<4;j++)
-            {
+        for(let i = 0;i<4;i++)
+            for(let j = 0;j<4;j++)
                 if(piece.shape & (0x8000 >> (i*4+j)))
                 {
                     ctx.fillStyle = color;
-                    var x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
-                    var y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
-                    var w = BLOCK_SIZE; 
-                    var h = BLOCK_SIZE;
+                    let x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
+                    let y = Y_OFFSET+(piece.y+i+index)*BLOCK_SIZE_OUTLINE + 1;
+                    let w = BLOCK_SIZE; 
+                    let h = BLOCK_SIZE;
                     if(y>Y_OFFSET)
                     {
                         ctx.fillRect(x,y,w,h);
                         if(ghost)
                         {
                             ctx.fillStyle = COLOR_BLACK;
-                            ctx.fillRect(x+2,y+2,w-4,h-4);
+                            const offset = 2;
+                            ctx.fillRect(x+offset,y+offset,w-offset*2,h-offset*2);
+                        }
+                        if(piece3d)
+                        {
+                            ctx.fillStyle = PIECE_3D_ADD;
+                            const offset = 3;
+                            ctx.fillRect(x+offset,y+offset,w-offset*2,h-offset*2);
                         }
                     }
                 }
-            }
-        }
     }
 
     drawNext = (typeId,index) =>
     {
-        for(var i = 0;i<4;i++)
-        {
-            for(var j = 0;j<4;j++)
-            {
+        for(let i = 0;i<4;i++)
+            for(let j = 0;j<4;j++)
                 if(PIECE_MAP[typeId][0] & (0x8000 >> (i*4+j)))
                 {
-                    this.ctx.fillStyle = COLOR_MAP[typeId];
+                    this.boardCtx.fillStyle = COLOR_MAP[typeId];
                     var x = NEXT_X_OFFSET+(j+1)*NEXT_BLOCK_SIZE_OUTLINE + this.offset;
                     var y = NEXT_Y_OFFSET+(i+1)*NEXT_BLOCK_SIZE_OUTLINE + DIST_BTW_NEXTS * index + 30;
                     var w = NEXT_BLOCK_SIZE; 
                     var h = NEXT_BLOCK_SIZE;
-                    this.ctx.fillRect(x,y,w,h);
+                    this.boardCtx.fillRect(x,y,w,h);
                 }
-            }
-        }
     }
 
     refreshNexts = () =>
     {
-        const ctx = this.ctx;
+        const ctx = this.boardCtx;
         ctx.fillStyle = COLOR_BLACK;
         ctx.fillRect(
             NEXT_X_OFFSET + this.offset,                // x
@@ -181,7 +189,7 @@ class view{
     {
         if(typeId==-1) return;
         let color;
-        let ctx = this.ctx;
+        let ctx = this.boardCtx;
         switch(mode)
         {
             case DRAWMODE.DRAWPIECE:
@@ -212,7 +220,7 @@ class view{
 
     refreshHold = () =>
     {
-        const ctx = this.ctx;
+        const ctx = this.boardCtx;
         ctx.fillStyle = COLOR_BLACK;
         ctx.fillRect(
             HOLD_X_OFFSET + this.offset,                // x
@@ -236,7 +244,7 @@ class view{
         for(var i = 0; i<BOARD_WIDTH;i++)
         {
             var x = X_OFFSET + BLOCK_SIZE_OUTLINE*i + 1 + this.offset;
-            this.ctx.fillRect(x,y,w,h);
+            this.boardCtx.fillRect(x,y,w,h);
         }
     }
 
@@ -244,7 +252,7 @@ class view{
 
     countDown = i =>
     {
-        let ctx = this.ctx2;
+        let ctx = this.infoCtx;
         ctx.font = "100px 'PressStart2P'";
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
@@ -267,7 +275,7 @@ class view{
 
     displayScore = score =>
     {
-        let ctx = this.ctx2;
+        let ctx = this.infoCtx;
         ctx.clearRect(X_OFFSET+this.offset-5,BOARD_END_Y-5,BLOCK_SIZE_OUTLINE*20+5,35);
         ctx.textBaseline = "middle";
         ctx.textAlign = "center"
@@ -285,7 +293,7 @@ class view{
         let x = HOLD_X_OFFSET + HOLD_BLOCK_SIZE_OUTLINE * 3+this.offset;
         let y = Y_OFFSET+(VISIBLE_HEIGHT-3)*BLOCK_SIZE_OUTLINE;
 
-        let ctx = this.ctx2;
+        let ctx = this.infoCtx;
 
         ctx.clearRect(
             HOLD_X_OFFSET+this.offset,
@@ -323,7 +331,7 @@ class view{
     displayScoreArr = scoreArr =>
     {
         if(scoreArr.length==0) return;
-        let ctx = this.ctx2;
+        let ctx = this.infoCtx;
         
         clearTimeout(this.clearLineInfo);
         ctx.clearRect(0,BOARD_END_Y+25+this.offset,BLOCK_SIZE_OUTLINE*40+5,100);
@@ -342,5 +350,53 @@ class view{
             ctx.fillText(text,BOARD_CENTER_X+this.offset,BOARD_END_Y+12+35*(i+1));    
         }
         this.clearLineInfo = setTimeout(()=>ctx.clearRect(0+this.offset,BOARD_END_Y+25,BLOCK_SIZE_OUTLINE*40+5,100),750);
+    }
+
+    lockAnimation = (piece, frame=0) =>
+    {
+        let ctx = this.aniCtx;
+        for(let i = 0;i<4;i++) for(let j = 0;j<4;j++)
+            if(piece.shape & (0x8000 >> (i*4+j)))
+            {
+                ctx.fillStyle = LOCK_WHITE;
+                let x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
+                let y = Y_OFFSET+(piece.y+i)*BLOCK_SIZE_OUTLINE + 1;
+                let w = BLOCK_SIZE; 
+                let h = BLOCK_SIZE;
+                if(y>Y_OFFSET)
+                {
+                    ctx.clearRect(x,y,w,h);
+                    for(let f = 0; f<Math.min(LOCK_ANIMATION_FRAMES-frame,frame);f++)
+                    {
+                        ctx.fillRect(x,y,w,h);
+                    }
+                }
+            }
+        if(frame==LOCK_ANIMATION_FRAMES)return;
+        setTimeout(()=>this.lockAnimation(piece,frame+1),1000/60);
+    }
+
+    hardDropAnimation = (piece, frame=0) =>
+    {
+        let ctx = this.aniCtx;
+        for(let i = 0;i<4;i++) for(let j = 0;j<4;j++)
+            if(piece.shape & (0x8000 >> (i*4+j)))
+            {
+                ctx.strokeStyle = GHOST_COLOR_MAP[piece.typeId];
+                console.log(ctx.strokeStyle);
+                ctx.lineWidth = 1;
+                for(let z = 0; z<BLOCK_SIZE;z++)
+                {
+                    let x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + z + this.offset;
+                    let y = Y_OFFSET+(piece.y+i)*BLOCK_SIZE_OUTLINE;
+                    let height = parseInt(Math.random()*(y-Y_OFFSET));
+                        ctx.beginPath();
+                        ctx.moveTo(x,y);
+                        ctx.lineTo(x,y-height);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+        setTimeout(()=>ctx.clearRect(0,0,768,1024),HARDDROP_ANIMATION_FRAMES*1000/60);
     }
 }
