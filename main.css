@@ -2,10 +2,6 @@
     font-family: "PressStart2P";
     src: url("./resources/PressStart2P.ttf");
 }
-td{
-    width:20;
-    height:20;
-}
 body{
     background:rgb(30,30,30);
     font-family: 'PressStart2P', cursive;
@@ -63,7 +59,34 @@ canvas{
     color: white;
     border: none;
 }
-.settings div{
+.settings .attribute{
     display:inline-block;
     width:15%;
+}
+.settings table{
+    font-size:1vw;
+}
+.settings .border{
+    border: 1px #aaaaaa solid;
+    margin: 1vw;
+    padding: 1vw;
+}
+.settings td{
+    padding:1.5vw;
+    overflow:hidden;
+    white-space: nowrap;
+    width:15vw;
+    max-width:15vw;
+}
+.keybinding{
+    background-color: black;
+    color: white;
+    font-family: inherit;
+    border: 1px white solid;
+    text-align:center;
+    width:10vw;
+    text-transform:uppercase;
+}
+.keybinding.clicked{
+    border: 1px red solid;
 }

@@ -94,18 +94,32 @@ const GRAVITY = Object.freeze([
 ]);
 
 const KEY = {
-    SHIFT:  16,     //hold
-    CTRL:   17,     //rotate counterclockwise
-    SPACE:  32,     //harddrop
-    LEFT:   37,
-    UP:     38,     //rotate clockwise
-    RIGHT:  39,
-    DOWN:   40,     //softdrop
-    C:      67,     //hold
+    p1:{
+        SHIFT:  16,     //hold
+        CTRL:   17,     //rotate counterclockwise
+        SPACE:  32,     //harddrop
+        LEFT:   37,
+        UP:     38,     //rotate clockwise
+        RIGHT:  39,
+        DOWN:   40,     //softdrop
+        C:      67,     //hold
+        X:      88,     //rotate clockwise
+        Z:      90      //rotate counterclockwise
+    },
+    p2:{
+        SHIFT:  16,     //hold
+        CTRL:   17,     //rotate counterclockwise
+        SPACE:  32,     //harddrop
+        LEFT:   37,
+        UP:     38,     //rotate clockwise
+        RIGHT:  39,
+        DOWN:   40,     //softdrop
+        C:      67,     //hold
+        X:      88,     //rotate clockwise
+        Z:      90      //rotate counterclockwise
+    },
     G:      78,     //Toggle Ghost
     P:      80,     //Pause
-    X:      88,     //rotate clockwise
-    Z:      90      //rotate counterclockwise
 };
 
 const KEYSTATES = Object.freeze(
@@ -149,9 +163,12 @@ const SCORE = Object.freeze(
 
 const MOVES = Object.freeze(
 {
-    [KEY.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
-    [KEY.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
-    [KEY.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
+    [KEY.p1.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.p1.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.p1.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
+    [KEY.p2.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.p2.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
+    [KEY.p2.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
 });
 
 const LAST_MOVE = Object.freeze(

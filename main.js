@@ -1,5 +1,6 @@
 var now, last;
 var requestId;
+var keysettings = () =>{};
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
  * keydown 이벤트와 keyup 이벤트 생성 후
@@ -9,7 +10,43 @@ var requestId;
 const init = () =>
 {
     resize();
-    window.addEventListener('load', resize, false);
+
+    document.querySelector("#keybinding").addEventListener("click", event=>{
+        if(event.target && event.target.nodeName == "TD")
+        {
+            if(event.target.id)
+            {
+                clearClicked();
+                event.target.className += " clicked"
+
+                document.onkeydown = (e) =>
+                {
+                    if(e.keyCode == 27)
+                    {
+                        clearClicked();
+                        document.onkeydown = null;
+                        return;
+                    }
+                    let temp;
+                    switch(e.keyCode)
+                    {
+                        case 17: temp = "CTRL";     break;
+                        case 21: temp = "R ALT";    break;
+                        case 25: temp = "HANJA";    break;
+                        case 32: temp = "SPACE";    break;
+                        case 37: temp = `←`;       break;
+                        case 38: temp = `↑`;       break;
+                        case 39: temp = `→`;       break;
+                        case 40: temp = `↓`;       break;
+                        default: temp = e.key;
+                    }
+                    event.target.innerText = temp;
+                    keySettings[event.target.id] = e.keyCode;
+                }
+            }   
+        }
+    });  
+
     window.addEventListener('resize', resize, false);
 }
 
@@ -65,20 +102,17 @@ const toggleSettings = () =>
 
 const settingsButton = (index, lr) =>
 {
+    settings[index] += (lr==1)?1:-1;
+    settings[index] = Math.abs(settings[index])%2
+
     switch(index)
     {
         case 0:
-        {
-            settings[0] = (settings[0]+1)%2;
             document.getElementById("GAMEMODE_GOALS").innerText = settings[0]==0?"NORMAL":"VARIABLE";
-        }
-        break;
+            break;
         case 1:
-        {
-            settings[1] = (settings[1]+1)%2;
             document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]+1;
-        }
-        break;
+            break;
     }
 }
 
@@ -109,3 +143,11 @@ const resize = () =>{
     canvas3.style.height = ch;
 }
 
+const clearClicked = () => 
+{
+    let nodes = document.querySelector("#keybinding").querySelectorAll(".keybinding.clicked");
+    for(let node of nodes)
+    {
+        node.className = "keybinding";
+    }
+}

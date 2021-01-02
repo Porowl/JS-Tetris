@@ -17,9 +17,65 @@
             </button>
         </div>
         <div id ="settings" class = "settings" hidden>
-            GAME MODE: <button onclick="settingsButton(0,0)">◀</button><div id="GAMEMODE_GOALS">NORMAL</div><button onClick="settingsButton(0,1)">▶</button>
-            <br> 
-            　PLAYERS　: <button onclick="settingsButton(1,0)">◀</button><div id="GAMEMODE_PLAYER">1</div><button onClick="settingsButton(1,1)">▶</button>
+            <div class="border" width="100%">
+                GAME MODE: <button onclick="settingsButton(0,0)">◀</button><div id="GAMEMODE_GOALS" class="attribute">NORMAL</div><button onClick="settingsButton(0,1)">▶</button>
+                <br> 
+                　PLAYERS　: <button onclick="settingsButton(1,0)">◀</button><div id="GAMEMODE_PLAYER" class="attribute">1</div><button onClick="settingsButton(1,1)">▶</button>
+            </div>
+            <div id="keybinding">
+                <div class="border">
+                    <table>
+                        <th colspan="4">
+                            Player 1
+                        </th>
+                        <tr>
+                            <td>LEFT</td><td id="p1_l" class="keybinding">←</td>
+                            <td>RIGHT</td><td id="p1_r" class="keybinding">→</td>
+                        </tr>
+                        <tr>
+                            <td>SOFT DROP</td><td id="p1_sd" class="keybinding">↓</td>
+                            <td>HARD DROP</td><td id="p1_hd" class="keybinding">SPACE</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td>CW Rotate</td><td id="p1_rot1" class="keybinding">↑</td><td id="p1_rot2" class="keybinding">X </td>
+                        </tr>
+                        <tr>
+                            <td>ACW Rotate</td><td id="p1_arot1" class="keybinding">CTRL</td><td id="p1_arot2" class="keybinding">Z</td><td></td>
+                        </tr>
+                        <tr>
+                            <td>HOLD</td><td id="p1_h1" class="keybinding">SHIFT</td><td id="p1_h2" class="keybinding">C</td><td></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="border">
+                        <table>
+                            <th colspan="4">
+                                Player 2
+                            </th>
+                            <tr>
+                                <td>LEFT</td><td id="p2_l" class="keybinding">J</td>
+                                <td>RIGHT</td><td id="p2_r" class="keybinding">L</td>
+                            </tr>
+                            <tr>
+                                <td>SOFT DROP</td><td id="p2_sd" class="keybinding">K</td>
+                                <td>HARD DROP</td><td id="p2_hd" class="keybinding">SPACE</td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr>
+                                <td>CW Rotate</td><td id="p2_rot1" class="keybinding">↑</td><td id="p2_rot2" class="keybinding">X </td>
+                            </tr>
+                            <tr>
+                                <td>ACW Rotate</td><td id="p2_arot1" class="keybinding">CTRL</td><td id="p2_arot2" class="keybinding">Z</td><td></td>
+                            </tr>
+                            <tr>
+                                <td>HOLD</td><td id="p2_h1" class="keybinding">SHIFT</td><td id="p2_h2" class="keybinding">C</td><td></td>
+                            </tr>
+                        </table>
+                    </div>
+            </div>
         </div>
     </div>
     <canvas id="field" width="1024" height="768" z-index="0"></canvas>

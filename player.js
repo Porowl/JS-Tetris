@@ -5,7 +5,7 @@ class player{
         this.board = new Board();
         this.view = new view(ctx, ctx2, ctx3, i);
         this.view.draw(this.board.field);
-        this.stg = new storage();
+        this.stg = new storage(i);
         this.random = random;
         this.gravity = this.stg.getGravity();
         this.piece;
@@ -32,9 +32,9 @@ class player{
 
         document.addEventListener('keyup',event=>
         {
-            if(event.keyCode == KEY.SPACE) return;
-            else if(event.KeyCode == KEY.SHIFT) return;
-            else if(event.KeyCode == KEY.C) return;
+            if(event.keyCode == KEY[`p${this.user+1}`].SPACE) return;
+            else if(event.KeyCode == KEY[`p${this.user+1}`].SHIFT) return;
+            else if(event.KeyCode == KEY[`p${this.user+1}`].C) return;
             this.stg.keyMap[event.keyCode] = false;
         });
     }
@@ -114,7 +114,7 @@ class player{
 
     moveDownCycle = dt =>
     {
-        if(this.stg.keyMap[KEY.DOWN]&&this.gravity>2/60)
+        if(this.stg.keyMap[KEY[`p${this.user+1}`].DOWN]&&this.gravity>2/60)
         {
             if(this.moveDown()){
                 this.stg.addDropScore(1)
@@ -133,7 +133,7 @@ class player{
     {
         if(this.board.canMoveDown(this.piece))
         {
-            let p = MOVES[KEY.DOWN](this.piece);
+            let p = MOVES[KEY[`p${this.user+1}`].DOWN](this.piece);
             this.updatePiece(p);
             return true;
         }
@@ -161,14 +161,14 @@ class player{
         {
             if(this.LRFrameCounter==0)
             {
-                let key = (state==KEYSTATES.L)?KEY.LEFT:KEY.RIGHT;
+                let key = (state==KEYSTATES.L)?KEY[`p${this.user+1}`].LEFT:KEY[`p${this.user+1}`].RIGHT;
                 p = MOVES[key](this.piece);
             }   
             else if (this.LRFrameCounter>=DAS)
             {
                 if ((this.LRFrameCounter-DAS)%ARR==0)
                 {
-                    let key = (state==KEYSTATES.L)?KEY.LEFT:KEY.RIGHT;
+                    let key = (state==KEYSTATES.L)?KEY[`p${this.user+1}`].LEFT:KEY[`p${this.user+1}`].RIGHT;
                     p = MOVES[key](this.piece);
                 }
             }
@@ -258,21 +258,21 @@ class player{
             }
             this.holdUsed = true;
         }
-        this.stg.keyMap[KEY.SHIFT] = false;
-        this.stg.keyMap[KEY.C] = false;
+        this.stg.keyMap[KEY[`p${this.user+1}`].SHIFT] = false;
+        this.stg.keyMap[KEY[`p${this.user+1}`].C] = false;
     }
 
     hardDrop = () =>
     {
-        if(this.stg.keyMap[KEY.SPACE])
+        if(this.stg.keyMap[KEY[`p${this.user+1}`].SPACE])
         {
             var result = this.board.hardDrop(this.piece);
             this.updatePiece(result.piece);
             this.stg.addDropScore(result.score*2)
             this.view.hardDropAnimation(this.piece);
             this.piece.hardDropped = true;
-            this.stg.keyMap[KEY.SPACE] = false;
-            this.stg.keyMap[KEY.H] = false;
+            this.stg.keyMap[KEY[`p${this.user+1}`].SPACE] = false;
+            this.stg.keyMap[KEY[`p${this.user+1}`].H] = false;
         }
     }
 

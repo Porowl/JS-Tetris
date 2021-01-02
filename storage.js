@@ -1,5 +1,6 @@
 class storage{
-    constructor(){
+    constructor(user){
+        this.user = user;
         this.level = 0;
         this.clearedLines = 0;
         this.score = 0;
@@ -157,10 +158,10 @@ class storage{
      */
     checkLR = () =>
     {
-        if(this.keyMap[KEY.LEFT]&&this.keyMap[KEY.RIGHT])
+        if(this.keyMap[KEY[`p${this.user+1}`].LEFT]&&this.keyMap[KEY[`p${this.user+1}`].RIGHT])
             return 0;
-        else if(this.keyMap[KEY.LEFT]) return KEYSTATES.L;
-        else if(this.keyMap[KEY.RIGHT]) return KEYSTATES.R;
+        else if(this.keyMap[KEY[`p${this.user+1}`].LEFT]) return KEYSTATES.L;
+        else if(this.keyMap[KEY[`p${this.user+1}`].RIGHT]) return KEYSTATES.R;
         return -1;
     }
 
@@ -174,11 +175,11 @@ class storage{
      */
     checkRot = () =>
     {
-        if((this.keyMap[KEY.UP]||this.keyMap[KEY.X])
-            &&(this.keyMap[KEY.Z]||this.keyMap[KEY.CTRL]))
+        if((this.keyMap[KEY[`p${this.user+1}`].UP]||this.keyMap[KEY[`p${this.user+1}`].X])
+            &&(this.keyMap[KEY[`p${this.user+1}`].Z]||this.keyMap[KEY[`p${this.user+1}`].CTRL]))
             return KEYSTATES.UZ;
-        else if(this.keyMap[KEY.UP]||this.keyMap[KEY.X]) return KEYSTATES.U;
-        else if(this.keyMap[KEY.Z]||this.keyMap[KEY.CTRL]) return KEYSTATES.Z;
+        else if(this.keyMap[KEY[`p${this.user+1}`].UP]||this.keyMap[KEY[`p${this.user+1}`].X]) return KEYSTATES.U;
+        else if(this.keyMap[KEY[`p${this.user+1}`].Z]||this.keyMap[KEY[`p${this.user+1}`].CTRL]) return KEYSTATES.Z;
         return -1;
     }
     
@@ -186,7 +187,7 @@ class storage{
      * 홀드 키의 상태를 반환합니다.
      * @return {boolean} 검사 값
      */
-    checkHold = () => this.keyMap[KEY.SHIFT]||this.keyMap[KEY.C];
+    checkHold = () => this.keyMap[KEY[`p${this.user+1}`].SHIFT]||this.keyMap[KEY[`p${this.user+1}`].C];
 
     addScore = mode => 
     {
