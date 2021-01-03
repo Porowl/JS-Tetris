@@ -352,7 +352,7 @@ class view{
         this.clearLineInfo = setTimeout(()=>ctx.clearRect(0+this.offset,BOARD_END_Y+25,BLOCK_SIZE_OUTLINE*40+5,100),750);
     }
 
-    lockAnimation = (piece, frame=0) =>
+    lockAnimation = (piece, frame=0, offset = 0) =>
     {
         let ctx = this.aniCtx;
         for(let i = 0;i<4;i++) for(let j = 0;j<4;j++)
@@ -360,7 +360,7 @@ class view{
             {
                 ctx.fillStyle = LOCK_WHITE;
                 let x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + this.offset;
-                let y = Y_OFFSET+(piece.y+i)*BLOCK_SIZE_OUTLINE + 1;
+                let y = Y_OFFSET+(piece.y+i-offset)*BLOCK_SIZE_OUTLINE + 1;
                 let w = BLOCK_SIZE; 
                 let h = BLOCK_SIZE;
                 if(y>Y_OFFSET)
@@ -373,30 +373,35 @@ class view{
                 }
             }
         if(frame==LOCK_ANIMATION_FRAMES)return;
-        setTimeout(()=>this.lockAnimation(piece,frame+1),1000/60);
+        setTimeout(()=>this.lockAnimation(piece,frame+1,offset),1000/60);
     }
 
-    hardDropAnimation = (piece, frame=0) =>
+    hardDropAnimation = (oriPiece, tarPiece) =>
     {
         let ctx = this.aniCtx;
         for(let i = 0;i<4;i++) for(let j = 0;j<4;j++)
-            if(piece.shape & (0x8000 >> (i*4+j)))
+            if(tarPiece.shape & (0x8000 >> (i*4+j)))
             {
-                ctx.strokeStyle = GHOST_COLOR_MAP[piece.typeId];
-                console.log(ctx.strokeStyle);
+                ctx.strokeStyle = GHOST_COLOR_MAP[tarPiece.typeId];
                 ctx.lineWidth = 1;
                 for(let z = 0; z<BLOCK_SIZE;z++)
                 {
-                    let x = X_OFFSET+(piece.x+j)*BLOCK_SIZE_OUTLINE + 1 + z + this.offset;
-                    let y = Y_OFFSET+(piece.y+i)*BLOCK_SIZE_OUTLINE;
+                    let x = X_OFFSET+(tarPiece.x+j)*BLOCK_SIZE_OUTLINE + 1 + z + this.offset;
+                    let y = Y_OFFSET+(tarPiece.y+i)*BLOCK_SIZE_OUTLINE;
+                    let y2 = Y_OFFSET+(oriPiece.y+i)*BLOCK_SIZE_OUTLINE;
                     let height = parseInt(Math.random()*(y-Y_OFFSET));
-                        ctx.beginPath();
-                        ctx.moveTo(x,y);
-                        ctx.lineTo(x,y-height);
+                    ctx.beginPath();
+                    ctx.moveTo(x,y);
+                    ctx.lineTo(x,y-height);
                     ctx.stroke();
                     ctx.closePath();
                 }
             }
-        setTimeout(()=>ctx.clearRect(0,0,768,1024),HARDDROP_ANIMATION_FRAMES*1000/60);
+        setTimeout(()=>ctx.clearRect(0,0,1024,768),HARDDROP_ANIMATION_FRAMES*1000/60);
+    }
+
+    showGarbage = n =>
+    {
+        let ctx = this.aniCtx;
     }
 }

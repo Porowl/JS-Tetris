@@ -37,6 +37,26 @@ class player{
             else if(event.KeyCode == KEY[`p${this.user+1}`].C) return;
             this.stg.keyMap[event.keyCode] = false;
         });
+
+        document.addEventListener(`attackOnP${this.user+1}`,event=>
+        {
+            let n = event.detail.n;
+            this.board.addGarbage(n);
+            this.view.showGarbage(this.board.garbage); 
+        });
+
+        document.addEventListener(`garbCountP${this.user+1}`, event=>
+        {
+            let lines = this.board.deductGarbage(event.detail.n)
+
+            if(lines>0)
+            document.dispatchEvent(`attackOnP${2-this.user}`), {
+                detail:
+                {
+                    n:lines
+                }
+            }
+        });
     }
 
     countDown = () =>{
@@ -72,6 +92,8 @@ class player{
             {
                 this.board.clearLine(this.clearedLineArr.get(i));
             }
+            this.board.executeGarbage();
+
             this.view.draw(this.board.field);
 
             let scoreArr = this.stg.updateLines(this.clearedLineArr,this.board.isEmpty());
@@ -267,9 +289,9 @@ class player{
         if(this.stg.keyMap[KEY[`p${this.user+1}`].SPACE])
         {
             var result = this.board.hardDrop(this.piece);
+            this.view.hardDropAnimation(this.piece, result.piece);
             this.updatePiece(result.piece);
             this.stg.addDropScore(result.score*2)
-            this.view.hardDropAnimation(this.piece);
             this.piece.hardDropped = true;
             this.stg.keyMap[KEY[`p${this.user+1}`].SPACE] = false;
             this.stg.keyMap[KEY[`p${this.user+1}`].H] = false;
@@ -316,7 +338,7 @@ class player{
         this.dropRate = 0;
         this.clearedLineArr = this.board.lock(piece);
         this.lineClearDelay = this.clearedLineArr.length()==0?0:LINE_CLEAR_FRAMES;
-        this.view.lockAnimation(piece);
+        this.view.lockAnimation(piece, 0, this.board.garbage);
     }
 
     checkTopOut = () =>

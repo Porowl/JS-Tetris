@@ -32,6 +32,13 @@ const CLEAR_STRINGS = Object.freeze(
     PERFECT: "PERFECT"
 });
 
+const GAMEMODE_NAMES = Object.freeze(
+{
+    0: "NORMAL",
+    1: "VARIABLE",
+    2: "VERSUS"
+});
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GRAPHIC MEASUREMENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const BOARD_HEIGHT  = 40;
@@ -93,6 +100,21 @@ const GRAVITY = Object.freeze([
     0.007
 ]);
 
+const COMBO_GARB = Object.freeze(
+    [
+        0,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        4,
+    ]
+);
+
 const KEY = {
     p1:{
         SHIFT:  16,     //hold
@@ -143,7 +165,8 @@ const DRAWMODE = Object.freeze(
 const GAMEMODE = Object.freeze(
 {
     STATIC: 0,
-    VARIABLE: 1
+    VARIABLE: 1,
+    VERSUS: 2
 });
 
 const SCORE = Object.freeze(
@@ -161,7 +184,7 @@ const SCORE = Object.freeze(
     PERFECT: 11
 });
 
-const MOVES = Object.freeze(
+const MOVES = 
 {
     [KEY.p1.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
     [KEY.p1.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
@@ -169,7 +192,7 @@ const MOVES = Object.freeze(
     [KEY.p2.LEFT]:  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
     [KEY.p2.RIGHT]: p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
     [KEY.p2.DOWN]:  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
-});
+};
 
 const LAST_MOVE = Object.freeze(
 {
@@ -205,7 +228,7 @@ const COLOR_MAP =  Object.freeze(
     "rgba(003,065,174,1.0)",     //J
     "rgba(000,224,187,1.0)",     //I
     "rgba(255,213,000,1.0)",     //O
-    COLOR_GREY                   //GARBAGE
+    "rgba(200,200,200,1.0)"      //GARBAGE
 ]);
 
 const GHOST_COLOR_MAP = Object.freeze(
@@ -219,15 +242,18 @@ const GHOST_COLOR_MAP = Object.freeze(
     "rgba(240,240,000,0.5)"      //O
 ]);
 
-const P1_COLORS = [
-                "rgb(000,161,224)",
-                "rgb(004,107,148)"
-            ];
-
-const P2_COLORS = [
-                "rgb(225,154,046)",
-                "rgb(181,112,038)"
-            ];
+const P1_COLORS = Object.freeze(
+    [
+        "rgb(000,161,224)",
+        "rgb(004,107,148)"
+    ]
+);
+const P2_COLORS = Object.freeze(
+    [
+        "rgb(225,154,046)",
+        "rgb(181,112,038)"
+    ]
+);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LOGICS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 const PIECE_MAP = Object.freeze(

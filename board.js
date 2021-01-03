@@ -2,6 +2,7 @@ class Board{
     constructor(){
         this.field = this.initBoard();
         this.remaining = 0;
+        this.garbage = 0;
     }
 
     /**
@@ -219,8 +220,9 @@ class Board{
         }
     }
 
-    addGarbage = n =>
+    executeGarbage = () =>
     {
+        let n = this.garbage;
         for(let y = 0; y<BOARD_HEIGHT-n;y++)
             for(let x = 0; x<BOARD_WIDTH;x++)
                 this.field[y][x] = this.field[y+n][x];
@@ -231,7 +233,25 @@ class Board{
             let chance = parseInt(Math.random()*BOARD_WIDTH);
             if(chance<3) empty = parseInt(Math.random()*BOARD_WIDTH);
             for(let x = 0; x<BOARD_WIDTH;x++)
-                this.field[y][x] = (x==empty)?0:7;
+                this.field[y][x] = (x==empty)?0:8;
         }
+        this.garbage = 0;
+    }
+
+    addGarbage = n =>
+    {
+        this.garbage+=n;
+    }
+    
+    deductGarbage = n =>
+    {
+        this.garbage -=n;
+        if(this.garbage<0)
+        {
+            let a = 0 - this.garbage
+            this.garbage = 0;
+            return a;
+        }
+        return 0;
     }
 }

@@ -6,11 +6,11 @@ class storage{
         this.score = 0;
         this.combo = 0;
 
-        this.b2b = false;
+        this.b2b = 0;
 
         /* Settings */
 
-        this.gameMode = settings[0]==0?GAMEMODE.STATIC:GAMEMODE.VARIABLE;
+        this.gameMode = settings[0];
         this.nexts = 6;
         this.initKeyMap();
 
@@ -79,40 +79,14 @@ class storage{
 
         if(this.gameMode == GAMEMODE.VARIABLE)
         {
-            switch(mode)
-            {
-                case SCORE.SINGLE:
-                    lines = 1;
-                    break;
-                case SCORE.DOUBLE:
-                    lines = 3;
-                    break;
-                case SCORE.TRIPLE:
-                    lines = 5;
-                    break;
-                case SCORE.TETRIS:
-                    lines = 8;
-                    break;
-                case SCORE.MTS:
-                    lines = 1;
-                    break;
-                case SCORE.MTSS:
-                    lines = 1;
-                    break;
-                case SCORE.TS:
-                    lines = 4;
-                    break;
-                case SCORE.TSS:
-                    lines = 8;
-                    break;
-                case SCORE.TSD:
-                    lines = 12;
-                    break;
-                case SCORE.TST:
-                    lines = 16;
-                    break;
-            }
+            lines = this.calculateVariableGoal(mode);
         } 
+
+        if(this.gameMode == GAMEMODE.VERSUS)
+        {
+            this.sendGarbage(mode);
+        }
+
         this.clearedLines += lines;
         
         let goal = this.getGoal();
@@ -199,22 +173,22 @@ class storage{
         {
             case SCORE.SINGLE:
                 calc = 100;
-                this.b2b = false;
+                this.b2b = 0;
                 text = CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.DOUBLE:
                 calc = 300;
-                this.b2b = false;
+                this.b2b = 0;
                 text = CLEAR_STRINGS.DOUBLE;
                 break;
             case SCORE.TRIPLE:
                 calc = 500;
-                this.b2b = false;
+                this.b2b = 0;
                 text = CLEAR_STRINGS.TRIPLE;
                 break;
             case SCORE.TETRIS:
                 calc = 800;
-                this.b2b = true;
+                this.b2b++;
                 text = CLEAR_STRINGS.TETRIS;
                 break;
             case SCORE.MTS:
@@ -223,7 +197,7 @@ class storage{
                 break;
             case SCORE.MTSS:
                 calc = 200;
-                this.b2b = true;
+                this.b2b++;
                 text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.MINI + CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.TS:
@@ -232,17 +206,17 @@ class storage{
                 break;
             case SCORE.TSS:
                 calc = 800;
-                this.b2b = true;
+                this.b2b++;
                 text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.SINGLE;
                 break;
             case SCORE.TSD:
                 calc = 1200;
-                this.b2b = true;
+                this.b2b++;
                 text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.DOUBLE;
                 break;
             case SCORE.TST:
                 calc = 1600;
-                this.b2b = true;
+                this.b2b++;
                 text = CLEAR_STRINGS.T_SPIN + CLEAR_STRINGS.TRIPLE;
                 break;
             case SCORE.PERFECT:
@@ -270,4 +244,97 @@ class storage{
     }
 
     getGoal = () => (this.gameMode == GAMEMODE.STATIC)?10:(this.level+1)*5;
+
+    calculateVariableGoal = (mode) =>
+    {
+        let lines;
+        switch(mode)
+        {
+            case SCORE.SINGLE:
+                lines = 1;
+                break;
+            case SCORE.DOUBLE:
+                lines = 3;
+                break;
+            case SCORE.TRIPLE:
+                lines = 5;
+                break;
+            case SCORE.TETRIS:
+                lines = 8;
+                break;
+            case SCORE.MTS:
+                lines = 1;
+                break;
+            case SCORE.MTSS:
+                lines = 1;
+                break;
+            case SCORE.TS:
+                lines = 4;
+                break;
+            case SCORE.TSS:
+                lines = 8;
+                break;
+            case SCORE.TSD:
+                lines = 12;
+                break;
+            case SCORE.TST:
+                lines = 16;
+                break;
+            default:
+                lines = 0;
+        }
+        return lines;
+    }
+
+    sendGarbage = (mode) =>
+    {
+        let lines = 0;
+        switch(mode)
+        {
+            case SCORE.SINGLE:
+                lines = 0;
+                break;
+            case SCORE.DOUBLE:
+                lines = 1;
+                break;
+            case SCORE.TRIPLE:
+                lines = 2;
+                break;
+            case SCORE.TETRIS:
+                lines = 4;
+                break;
+            case SCORE.MTS:
+                lines = 0;
+                break;
+            case SCORE.MTSS:
+                lines = 2;
+                break;
+            case SCORE.TS:
+                lines = 0;
+                break;
+            case SCORE.TSS:
+                lines = 2;
+                break;
+            case SCORE.TSD:
+                lines = 4;
+                break;
+            case SCORE.TST:
+                lines = 6;
+                break;
+            case SCORE.PERPECT:
+                lines = 10; 
+            default:
+                lines = 0;
+        }
+
+        lines += (this.b2b>1)?1:0;
+        lines += COMBO_GARB[Math.min(this.combo,COMBO_GARB.length-1)];
+        document.dispatchEvent(
+            new CustomEvent(`garbCountP${this.user+1}`,{
+                detail:{
+                    n:lines
+                }
+            })
+        );
+    }
 }

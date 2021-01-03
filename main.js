@@ -1,6 +1,6 @@
 var now, last;
 var requestId;
-var keysettings = () =>{};
+var keySettings = () =>{};
 /**
  * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
  * keydown 이벤트와 keyup 이벤트 생성 후
@@ -52,6 +52,9 @@ const init = () =>
 
 const gameStart = () => {
     document.getElementById("main").hidden = true;
+
+    changeKeyBindings();
+
     let players = [];
     let playerNum = settings[1]+1;
     let randomEngine = new random();
@@ -82,7 +85,7 @@ const animate = (players) =>
     last = now;
 
     for(var i = 0; i<playerNum;i++)
-    {
+    { 
         players[i].update(Math.min(1,dt));
         if(players[i].gameOver)
         {
@@ -103,12 +106,23 @@ const toggleSettings = () =>
 const settingsButton = (index, lr) =>
 {
     settings[index] += (lr==1)?1:-1;
-    settings[index] = Math.abs(settings[index])%2
-
+    let a = 0;
     switch(index)
     {
         case 0:
-            document.getElementById("GAMEMODE_GOALS").innerText = settings[0]==0?"NORMAL":"VARIABLE";
+            a = 3;
+            break;
+        case 1:
+            a = 2;
+            break;
+    }
+
+    settings[index] = Math.abs(settings[index])%a;
+    
+    switch(index)
+    {
+        case 0:
+            document.getElementById("GAMEMODE_GOALS").innerText = GAMEMODE_NAMES[settings[index]];
             break;
         case 1:
             document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]+1;
@@ -150,4 +164,20 @@ const clearClicked = () =>
     {
         node.className = "keybinding";
     }
+}
+
+const changeKeyBindings = () =>
+{
+    for(const property in keySettings)
+    {
+        var temp = property.split('_')
+        KEY[temp[0]][temp[1]] = keySettings[property]
+    }
+    
+    MOVES[KEY.p1.LEFT] =  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
+    MOVES[KEY.p1.RIGHT] = p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
+    MOVES[KEY.p1.DOWN] =  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN}),
+    MOVES[KEY.p2.LEFT] = p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
+    MOVES[KEY.p2.RIGHT] = p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
+    MOVES[KEY.p2.DOWN] =  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN})
 }
