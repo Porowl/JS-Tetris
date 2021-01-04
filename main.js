@@ -1,15 +1,12 @@
 var now, last;
 var requestId;
 var keySettings = () =>{};
-/**
- * 메인 페이지 로딩이 완료되면 실행되는 함수로써 
- * keydown 이벤트와 keyup 이벤트 생성 후
- * requestAnimationFrame 함수 호출을 위한 타임스탬프 기준을 찍은 후
- * 해당 함수를 불러옵니다.
- */
+
 const init = () =>
 {
     resize();
+
+    loadSettings();
 
     document.querySelector("#keybinding").addEventListener("click", event=>{
         if(event.target && event.target.nodeName == "TD")
@@ -42,6 +39,7 @@ const init = () =>
                     }
                     event.target.innerText = temp;
                     keySettings[event.target.id] = e.keyCode;
+                    if(storageAvailable()) localStorage[event.target.id] = e.keyCode;
                 }
             }   
         }
@@ -128,6 +126,8 @@ const settingsButton = (index, lr) =>
             document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]+1;
             break;
     }
+
+    localStorage['gameSettings'] = settings;
 }
 
 const timeStamp = () =>
@@ -172,6 +172,10 @@ const changeKeyBindings = () =>
     {
         var temp = property.split('_')
         KEY[temp[0]][temp[1]] = keySettings[property]
+        if(storageAvailable())
+        {
+            localStorage[property] = keySettings[property];
+        }
     }
     
     MOVES[KEY.p1.LEFT] =  p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
@@ -180,4 +184,53 @@ const changeKeyBindings = () =>
     MOVES[KEY.p2.LEFT] = p=>({...p, x: p.x-1, lastMove: LAST_MOVE.MOVE}),
     MOVES[KEY.p2.RIGHT] = p=>({...p, x: p.x+1, lastMove: LAST_MOVE.MOVE}),
     MOVES[KEY.p2.DOWN] =  p=>({...p, y: p.y+1, lastMove: LAST_MOVE.DOWN})
+}
+
+const loadSettings = () =>
+{
+    if(storageAvailable())
+    {
+        for (const property in localStorage)
+        {
+            const target = document.querySelector('#'+property);
+            let temp;
+            key = parseInt(localStorage[property]);
+            if(target !== null) 
+            {
+                switch(key)
+                {
+                    case 17: temp = "CTRL";     break;
+                    case 21: temp = "R ALT";    break;
+                    case 25: temp = "HANJA";    break;
+                    case 32: temp = "SPACE";    break;
+                    case 37: temp = `←`;       break;
+                    case 38: temp = `↑`;       break;
+                    case 39: temp = `→`;       break;
+                    case 40: temp = `↓`;       break;
+                    default: temp = String.fromCharCode(localStorage[property]);
+                }
+                target.innerText = temp;
+                keySettings[property] = localStorage[property];    
+            }
+        } 
+        const savedSettings = localStorage['gameSettings']
+        if(savedSettings)
+        {
+            let temp = savedSettings.split(',');
+            for(let i = 0; i<temp.length;i++)
+                settings[i] = parseInt(temp[i])
+                
+            document.getElementById("GAMEMODE_GOALS").innerText = GAMEMODE_NAMES[settings[0]];
+            document.getElementById("GAMEMODE_PLAYER").innerText = settings[1]+1;
+        }
+    }
+}
+
+const storageAvailable = () =>{
+    try{
+        return localStorage !== null;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
 }

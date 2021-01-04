@@ -222,7 +222,7 @@ class Board{
 
     executeGarbage = () =>
     {
-        let n = this.garbage;
+        let n = Math.min(this.garbage,BOARD_HEIGHT-1);
         for(let y = 0; y<BOARD_HEIGHT-n;y++)
             for(let x = 0; x<BOARD_WIDTH;x++)
                 this.field[y][x] = this.field[y+n][x];

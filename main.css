@@ -5,7 +5,7 @@
 body{
     background:rgb(30,30,30);
     font-family: 'PressStart2P', cursive;
-    font-size: 1.768vw;
+    font-size: clamp(8px, 1vw, 16px);
     color:white;
     margin:0;
     padding:0;
@@ -31,14 +31,13 @@ canvas{
     font-size: 14vw;
 }
 #main p{
-    margin:5vw auto 7vw auto;
+    margin:clamp(10px,5vw,50px) auto clamp(10px,7vw,50px) auto;
     padding:0;
 }
 .buttons{
     width:100%;
 }
 .buttons button{
-    font-size: 1vw;
     display: block;
     margin: 1vw auto;
     padding: 1vw;
@@ -51,8 +50,8 @@ canvas{
     border: 1px solid white;
     width: 80%;
     margin: auto;
-    font-size:1vw;
-    padding: 1vw;
+    font-size: clamp(8px, 1vw, 16px);
+    padding: clamp(2px, 1vw, 5px);
 }
 .settings button{
     background-color: black;
@@ -63,16 +62,17 @@ canvas{
     display:inline-block;
     width:15%;
 }
-.settings table{
-    font-size:1vw;
-}
-.settings .border{
+.border{
     border: 1px #aaaaaa solid;
     margin: 1vw;
     padding: 1vw;
 }
+.settings th{
+    font-weight:normal;
+}
 .settings td{
-    padding:1.5vw;
+    padding:clamp(2px,1.5vw,5px);
+    font-size: clamp(8px, 1vw, 16px);
     overflow:hidden;
     white-space: nowrap;
     width:15vw;

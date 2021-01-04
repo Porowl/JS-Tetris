@@ -50,12 +50,15 @@ class player{
             let lines = this.board.deductGarbage(event.detail.n)
 
             if(lines>0)
-            document.dispatchEvent(`attackOnP${2-this.user}`), {
-                detail:
+            document.dispatchEvent(
+                new CustomEvent(`attackOnP${2-this.user}`, 
                 {
-                    n:lines
-                }
-            }
+                    detail:
+                    {
+                        n:lines
+                    }
+                })
+            );
         });
     }
 
@@ -289,7 +292,7 @@ class player{
         if(this.stg.keyMap[KEY[`p${this.user+1}`].SPACE])
         {
             var result = this.board.hardDrop(this.piece);
-            this.view.hardDropAnimation(this.piece, result.piece);
+            this.view.hardDropAnimation(result.piece,this.board.garbage);
             this.updatePiece(result.piece);
             this.stg.addDropScore(result.score*2)
             this.piece.hardDropped = true;

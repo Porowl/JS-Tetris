@@ -78,15 +78,16 @@ class storage{
         if(perfect) scoreArr.push(this.addScore(SCORE.PERFECT));
 
         if(this.gameMode == GAMEMODE.VARIABLE)
-        {
             lines = this.calculateVariableGoal(mode);
-        } 
-
+ 
         if(this.gameMode == GAMEMODE.VERSUS)
         {
-            this.sendGarbage(mode);
-        }
-
+            if(perfect)
+                this.sendGarbage(SCORE.PERFECT);
+            else if(mode)
+                this.sendGarbage(mode);
+        }    
+ 
         this.clearedLines += lines;
         
         let goal = this.getGoal();
@@ -288,6 +289,7 @@ class storage{
 
     sendGarbage = (mode) =>
     {
+        console.log(mode);
         let lines = 0;
         switch(mode)
         {
@@ -321,14 +323,17 @@ class storage{
             case SCORE.TST:
                 lines = 6;
                 break;
-            case SCORE.PERPECT:
+            case SCORE.PERFECT:
                 lines = 10; 
+                break;
             default:
                 lines = 0;
         }
 
         lines += (this.b2b>1)?1:0;
         lines += COMBO_GARB[Math.min(this.combo,COMBO_GARB.length-1)];
+
+        console.log(`Sending ${lines} lines to board ${2-this.user}`)
         document.dispatchEvent(
             new CustomEvent(`garbCountP${this.user+1}`,{
                 detail:{

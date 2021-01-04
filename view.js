@@ -376,7 +376,7 @@ class view{
         setTimeout(()=>this.lockAnimation(piece,frame+1,offset),1000/60);
     }
 
-    hardDropAnimation = (oriPiece, tarPiece) =>
+    hardDropAnimation = (tarPiece, offset = 0) =>
     {
         let ctx = this.aniCtx;
         for(let i = 0;i<4;i++) for(let j = 0;j<4;j++)
@@ -387,8 +387,7 @@ class view{
                 for(let z = 0; z<BLOCK_SIZE;z++)
                 {
                     let x = X_OFFSET+(tarPiece.x+j)*BLOCK_SIZE_OUTLINE + 1 + z + this.offset;
-                    let y = Y_OFFSET+(tarPiece.y+i)*BLOCK_SIZE_OUTLINE;
-                    let y2 = Y_OFFSET+(oriPiece.y+i)*BLOCK_SIZE_OUTLINE;
+                    let y = Y_OFFSET+(tarPiece.y+i-offset)*BLOCK_SIZE_OUTLINE;
                     let height = parseInt(Math.random()*(y-Y_OFFSET));
                     ctx.beginPath();
                     ctx.moveTo(x,y);
@@ -397,11 +396,56 @@ class view{
                     ctx.closePath();
                 }
             }
-        setTimeout(()=>ctx.clearRect(0,0,1024,768),HARDDROP_ANIMATION_FRAMES*1000/60);
+        setTimeout(
+                ()=>
+                ctx.clearRect(
+                    X_OFFSET + this.offset,
+                    Y_OFFSET,
+                    BOARD_WIDTH*BLOCK_SIZE_OUTLINE,
+                    VISIBLE_HEIGHT*BLOCK_SIZE_OUTLINE
+                    )
+                ,
+                HARDDROP_ANIMATION_FRAMES*1000/60
+            );
     }
 
     showGarbage = n =>
     {
-        let ctx = this.aniCtx;
+        const ctx = this.aniCtx;
+        const g10s = parseInt(n/10);
+        const g5s = parseInt((n%10)/5);
+        const g1s = n%5;
+        const length = g10s+g5s+g1s;
+        let accSize = 0;
+
+        ctx.clearRect(X_OFFSET+this.offset,0,X_OFFSET+BLOCK_SIZE_OUTLINE*BOARD_WIDTH,Y_OFFSET);
+
+        console.log(g10s,g5s,g1s)
+        for(let index = 0; index<length; index++)
+        {
+            let size = 0
+            if(index<g10s)
+            {
+                size = 20   
+                ctx.fillStyle = COLOR_MAP[7];
+            }
+            else if(index < g10s+g5s)
+            {
+                size = 16
+                ctx.fillStyle = COLOR_WHITE;
+            }
+            else {
+                size = 10;
+                ctx.fillStyle = COLOR_WHITE;
+            }
+            
+            const x = X_OFFSET+this.offset + accSize;
+            const y = Y_OFFSET-size-(30-size)/2;
+            ctx.strokeStyle = COLOR_BLACK;
+            ctx.fillRect(x,y,size,size);
+            ctx.strokeRect(x,y,size,size);
+
+            accSize += size + 5;
+        }
     }
 }
