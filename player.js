@@ -307,6 +307,7 @@ class player{
         this.view.drawHold(this.stg.hold,DRAWMODE.DRAWPIECE);
         this.updatePiece(this.piece);
         this.updateNexts();
+        this.gravity = this.stg.getGravity();
         this.holdUsed = false;
         this.initDelay = ENTRY_DELAY;
         this.lineClearDelay = -1;
@@ -323,6 +324,7 @@ class player{
 
         if(this.ghostSwitch) this.view.drawPiece(p, DRAWMODE.DRAWGHOST, this.board.getGhostIndex(p));
         this.view.drawPiece(piece, DRAWMODE.DRAWPIECE);
+        
     }
     
     updateNexts = () =>
